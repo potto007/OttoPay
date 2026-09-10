@@ -172,22 +172,29 @@ public class CurrencyPocket
         }
     }
 
+    // A purchase removes its price from the coins the player carries first. The pouch pays
+    // only the part those coins did not cover. The upstream patch charged the pouch the full
+    // price on top, so a player carrying coins paid twice.
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem), typeof(string), typeof(int), typeof(int), typeof(bool))]
     public static class Inventory_RemoveItem_Patch
     {
-        public static void Postfix(Inventory __instance, string name, int amount, int itemQuality, bool worldLevelBased)
+        public static void Prefix(Inventory __instance, string name, int itemQuality, bool worldLevelBased, out int __state)
         {
-            if (Player.m_localPlayer == null) return;
-            if (__instance == Player.m_localPlayer.GetInventory())
-            {
-                int coinCount = GetPlayerCoinsFromCustomData();
-                if (name == CoinToken && OttoPayApi.IsBankMember() && GetPlayerCoinsFromCustomData() >= amount)
-                {
-                    coinCount -= amount;
-                    UpdatePlayerCustomData(coinCount);
-                    UpdatePocketUI();
-                }
-            }
+            __state = name == CoinToken ? __instance.CountItems(name, itemQuality, worldLevelBased) : 0;
+        }
+
+        public static void Postfix(Inventory __instance, string name, int amount, int itemQuality, bool worldLevelBased, int __state)
+        {
+            if (Player.m_localPlayer == null || __instance != Player.m_localPlayer.GetInventory()) return;
+            if (name != CoinToken || !OttoPayApi.IsBankMember()) return;
+
+            int paidFromCarried = __state - __instance.CountItems(name, itemQuality, worldLevelBased);
+            int unpaid = amount - paidFromCarried;
+            if (unpaid <= 0) return;
+
+            int pouch = GetPlayerCoinsFromCustomData();
+            UpdatePlayerCustomData(pouch - Math.Min(pouch, unpaid));
+            UpdatePocketUI();
         }
     }
 
