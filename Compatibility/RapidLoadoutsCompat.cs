@@ -18,7 +18,7 @@ public class RapidLoadoutsCompat
     public static void GetPlayerCoins(ref int __result, ref ItemDrop ___m_coinPrefab)
     {
         if (!Player.m_localPlayer || ___m_coinPrefab == null) return;
-        if (___m_coinPrefab.m_itemData.m_shared.m_name == CoinToken)
+        if (___m_coinPrefab.m_itemData.m_shared.m_name == CoinToken && OttoPayApi.IsBankMember())
         {
             __result += Player.m_localPlayer.m_customData.TryGetValue(CoinCountCustomData, out string coinCount) ? int.Parse(coinCount) : 0;
         }

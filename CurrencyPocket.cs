@@ -55,6 +55,9 @@ public class CurrencyPocket
         [HarmonyPriority(Priority.VeryLow)]
         private static void Postfix(InventoryGui __instance)
         {
+            // The panels only shift to make room for the pouch once there is a pouch to show.
+            if (!OttoPayApi.IsBankMember()) return;
+
             if (cached)
             {
                 if (coroutine != null)
@@ -107,7 +110,10 @@ public class CurrencyPocket
     {
         static void Postfix(StoreGui __instance, ref int __result)
         {
-            __result += GetPlayerCoinsFromCustomData();
+            if (OttoPayApi.IsBankMember())
+            {
+                __result += GetPlayerCoinsFromCustomData();
+            }
         }
     }
 
@@ -129,7 +135,7 @@ public class CurrencyPocket
 
             CheckAutoPickupActive.PickingUp = false;
 
-            if (itemName == CoinToken)
+            if (itemName == CoinToken && OttoPayApi.IsBankMember())
             {
                 UpdatePlayerCustomData(GetPlayerCoinsFromCustomData() + originalAmount);
                 UpdatePocketUI();
@@ -159,7 +165,7 @@ public class CurrencyPocket
         private static void Postfix(Inventory __instance, ItemDrop.ItemData item, ref bool __result)
         {
             if (__result || !CheckAutoPickupActive.PickingUp) return;
-            if (item?.m_shared?.m_name == CoinToken)
+            if (item?.m_shared?.m_name == CoinToken && OttoPayApi.IsBankMember())
             {
                 __result = true;
             }
@@ -175,7 +181,7 @@ public class CurrencyPocket
             if (__instance == Player.m_localPlayer.GetInventory())
             {
                 int coinCount = GetPlayerCoinsFromCustomData();
-                if (name == CoinToken && GetPlayerCoinsFromCustomData() >= amount)
+                if (name == CoinToken && OttoPayApi.IsBankMember() && GetPlayerCoinsFromCustomData() >= amount)
                 {
                     coinCount -= amount;
                     UpdatePlayerCustomData(coinCount);
@@ -194,7 +200,7 @@ public class CurrencyPocket
             if (!player) return true;
 
             // Only intercept coins moved into the player's main inventory.
-            if (item?.m_shared?.m_name != CoinToken || __instance != player.GetInventory())
+            if (item?.m_shared?.m_name != CoinToken || __instance != player.GetInventory() || !OttoPayApi.IsBankMember())
                 return true;
 
             // If there is a coin stack at target, bounded merge.
@@ -247,6 +253,8 @@ public class CurrencyPocket
     internal static void UpdatePocketUI()
     {
         if (InventoryGuiUpdatePatch.pocketUI == null) return;
+        // No pouch until the player joins the Merchant Bank Network.
+        InventoryGuiUpdatePatch.pocketUI.SetActive(OttoPayApi.IsBankMember());
         // Update the UI with the current coin count
         Transform? coinText = Utils.FindChild(InventoryGuiUpdatePatch.pocketUI.transform, AcText);
         if (coinText == null) return;
