@@ -197,6 +197,7 @@ public struct Constants
 {
     public const string CoinPocketUIName = "CoinPocketUI";
     public const string ExtractCoinsButtonName = "ExtractCoinsButton";
+    public const string AuraPayButtonName = "AuraPayToggleButton";
     public const string ArmorName = "Armor";
     public const string WeightName = "Weight";
     public const string JewelcraftingSynergyName = "Jewelcrafting Synergy";
@@ -218,6 +219,7 @@ public struct Constants
     internal const string QuickStackStoreGUID = "goldenrevolver.quick_stack_store";
     internal const string JewelcraftingGUID = "org.bepinex.plugins.jewelcrafting";
     internal const string RapidLoadoutsGUID = "Azumatt.RapidLoadouts";
+    internal const string OttoAuraGUID = "potto007.OttoAura";
     internal const string ExtraSlotsGuid = "shudnal.ExtraSlots";
     internal const string EsSectionName = "Mods compatibility - Reduced inventory size";
 }

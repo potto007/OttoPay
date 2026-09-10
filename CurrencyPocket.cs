@@ -14,6 +14,7 @@ public class CurrencyPocket
     public static class InventoryGuiUpdatePatch
     {
         public static Button ExtractButton = null!;
+        public static Button AuraPayButton = null!;
         public static GameObject pocketUI = null!;
         public static Sprite coinSprite = null!;
 
@@ -30,6 +31,12 @@ public class CurrencyPocket
             if (ExtractButton == null && pocketUI != null)
             {
                 CreateButton(__instance);
+            }
+
+            // The toggle only means something when OttoAura is there to charge the pouch.
+            if (AuraPayButton == null && pocketUI != null && BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(OttoAuraGUID))
+            {
+                CreateAuraPayToggle(__instance);
             }
         }
     }
@@ -246,6 +253,43 @@ public class CurrencyPocket
         TextMeshProUGUI coinTextTMP = coinText.GetComponent<TextMeshProUGUI>();
         if (coinTextTMP == null) return;
         coinTextTMP.text = $"{GetPlayerCoinsFromCustomData()}";
+        UpdateAuraPayToggle();
+    }
+
+    internal static void UpdateAuraPayToggle()
+    {
+        if (InventoryGuiUpdatePatch.AuraPayButton == null) return;
+        TextMeshProUGUI? label = InventoryGuiUpdatePatch.AuraPayButton.GetComponentInChildren<TextMeshProUGUI>();
+        if (label == null) return;
+        label.text = OttoPayApi.IsAuraPayEnabled() ? "<color=#7CFFB2>Aura</color>" : "<color=#8A8A8A>Aura</color>";
+    }
+
+    private static void CreateAuraPayToggle(InventoryGui gui)
+    {
+        Button button = Object.Instantiate(gui.m_takeAllButton, InventoryGuiUpdatePatch.pocketUI.transform);
+        button.name = AuraPayButtonName;
+        button.transform.SetParent(InventoryGuiUpdatePatch.pocketUI.transform, false);
+        button.onClick = new Button.ButtonClickedEvent();
+        button.onClick.AddListener(() =>
+        {
+            bool enabled = !OttoPayApi.IsAuraPayEnabled();
+            OttoPayApi.SetAuraPayEnabled(enabled);
+            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, enabled ? "AuraPay on: ward auras may take coins from your pouch." : "AuraPay off: ward auras will not take coins.");
+        });
+
+        UIGamePad? pad = button.GetComponent<UIGamePad>();
+        if (pad != null)
+        {
+            if (pad.m_hint) Object.Destroy(pad.m_hint);
+            pad.m_hint = null;
+            pad.m_zinputKey = string.Empty;
+            pad.m_keyCode = KeyCode.None;
+        }
+
+        button.GetComponent<RectTransform>().localPosition = new Vector3(2.5f, -38, 0);
+        button.transform.localScale = new Vector3(0.4f, 0.4f, 1);
+        InventoryGuiUpdatePatch.AuraPayButton = button;
+        UpdateAuraPayToggle();
     }
 
     private static void CreatePocketUI(InventoryGui instance)
