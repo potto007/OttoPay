@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static CurrencyPocket.CurrencyPocketPlugin;
+using static OttoPay.OttoPayPlugin;
 
-namespace CurrencyPocket;
+namespace OttoPay;
 
 public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -108,7 +108,7 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             }
             case PointerEventData.InputButton.Right:
             {
-                CurrencyPocketLogger.LogWarning("Right clicked");
+                OttoPayLogger.LogWarning("Right clicked");
             }
                 break;
         }

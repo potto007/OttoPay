@@ -1,26 +1,28 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using CurrencyPocket.Compatibility;
+using OttoPay.Compatibility;
 using JetBrains.Annotations;
 using ServerSync;
 
-namespace CurrencyPocket;
+namespace OttoPay;
 
 [BepInPlugin(ModGUID, ModName, ModVersion)]
-public class CurrencyPocketPlugin : BaseUnityPlugin
+// Both keep coins under the same player data key, so only one may load.
+[BepInIncompatibility("Azumatt.CurrencyPocket")]
+public class OttoPayPlugin : BaseUnityPlugin
 {
-    internal const string ModName = "CurrencyPocket";
-    internal const string ModVersion = "1.0.13";
-    internal const string Author = "Azumatt";
+    internal const string ModName = "OttoPay";
+    internal const string ModVersion = "1.0.0";
+    internal const string Author = "potto007";
     private const string ModGUID = $"{Author}.{ModName}";
     private static string ConfigFileName = $"{ModGUID}.cfg";
     private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
     internal readonly Harmony _harmony = new(ModGUID);
-    public static readonly ManualLogSource CurrencyPocketLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+    public static readonly ManualLogSource OttoPayLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
     internal static Sprite DownloadSprite = null!;
-    public static CurrencyPocketPlugin instance = null!;
+    public static OttoPayPlugin instance = null!;
     private static readonly ConfigSync ConfigSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion, ModRequired = false};
     private FileSystemWatcher _watcher;
     private readonly object _reloadLock = new();
@@ -99,19 +101,19 @@ public class CurrencyPocketPlugin : BaseUnityPlugin
         {
             if (!File.Exists(ConfigFileFullPath))
             {
-                CurrencyPocketLogger.LogWarning("Config file does not exist. Skipping reload.");
+                OttoPayLogger.LogWarning("Config file does not exist. Skipping reload.");
                 return;
             }
 
             try
             {
-                CurrencyPocketLogger.LogDebug("Reloading configuration...");
+                OttoPayLogger.LogDebug("Reloading configuration...");
                 SaveWithRespectToConfigSet(true);
-                CurrencyPocketLogger.LogInfo("Configuration reload complete.");
+                OttoPayLogger.LogInfo("Configuration reload complete.");
             }
             catch (Exception ex)
             {
-                CurrencyPocketLogger.LogError($"Error reloading configuration: {ex.Message}");
+                OttoPayLogger.LogError($"Error reloading configuration: {ex.Message}");
             }
         }
 
@@ -139,12 +141,24 @@ public class CurrencyPocketPlugin : BaseUnityPlugin
         return stream.ToArray();
     }
 
+    // UnityEngine.ImageConversionModule cannot be referenced from net48: its metadata
+    // names ReadOnlySpan<byte>, which lives in the game's Mono mscorlib and not in the
+    // net48 reference assemblies. The byte[] overload of LoadImage still exists, so it is
+    // bound once at startup instead.
+    private static readonly MethodInfo? LoadImageMethod = AccessTools.Method(
+        "UnityEngine.ImageConversion:LoadImage", [typeof(Texture2D), typeof(byte[])]);
+
     private static Texture2D loadTexture(string name)
     {
         Texture2D texture = new(0, 0);
-        texture.LoadImage(ReadEmbeddedFileBytes("assets." + name));
+        if (LoadImageMethod == null)
+        {
+            OttoPayLogger.LogError("UnityEngine.ImageConversion.LoadImage was not found. Textures will not load.");
+            return texture;
+        }
 
-        return texture!;
+        LoadImageMethod.Invoke(null, [texture, ReadEmbeddedFileBytes("assets." + name)]);
+        return texture;
     }
 
     internal static Sprite loadSprite(string name)

@@ -1,10 +1,10 @@
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
-using static CurrencyPocket.MiscFunctions;
+using static OttoPay.MiscFunctions;
 using Object = UnityEngine.Object;
 
-namespace CurrencyPocket;
+namespace OttoPay;
 
 public class CurrencyPocket
 {
@@ -254,7 +254,7 @@ public class CurrencyPocket
         InventoryGuiUpdatePatch.pocketUI = Object.Instantiate(inv.Find(ArmorName).gameObject, inv);
         InventoryGuiUpdatePatch.pocketUI.name = CoinPocketUIName;
         RectTransform? pocketRect = InventoryGuiUpdatePatch.pocketUI.GetComponent<RectTransform>();
-        CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"Creating pocket UI at {pocketRect.anchoredPosition}");
+        OttoPayPlugin.OttoPayLogger.LogDebug($"Creating pocket UI at {pocketRect.anchoredPosition}");
         if (IsOverlappingUIModInstalled())
         {
             pocketRect.anchoredPosition += new Vector2(0, -234);
@@ -268,7 +268,7 @@ public class CurrencyPocket
             pocketRect.anchoredPosition = new Vector2(armorRect.anchoredPosition.x, (armorRect.anchoredPosition.y + weightRect.anchoredPosition.y) / 2);
         }
 
-        CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"Creating pocket UI at {pocketRect.anchoredPosition}");
+        OttoPayPlugin.OttoPayLogger.LogDebug($"Creating pocket UI at {pocketRect.anchoredPosition}");
         GameObject? coins = ObjectDB.instance.GetItemPrefab(CoinsPrefabName);
         InventoryGuiUpdatePatch.coinSprite = coins.GetComponent<ItemDrop>().m_itemData.GetIcon();
         InventoryGuiUpdatePatch.pocketUI.transform.Find(ArmorIconName).GetComponent<Image>().sprite = InventoryGuiUpdatePatch.coinSprite;
@@ -366,7 +366,7 @@ static class InventoryGridDropItemPatch
         ItemDrop.ItemData itemAt = __instance.m_inventory.GetItemAt(pos.x, pos.y);
         if (itemAt == item)
         {
-            CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"Item at {pos.x}, {pos.y} is the same as the item being dropped.");
+            OttoPayPlugin.OttoPayLogger.LogDebug($"Item at {pos.x}, {pos.y} is the same as the item being dropped.");
             return;
         }
 
@@ -377,18 +377,18 @@ static class InventoryGridDropItemPatch
             {
                 // Check if the itemAt stack can accept coins, if so, add up until the max stack if available, if the itemAt stack is full, do nothing
                 int maxStack = itemAt.m_shared.m_maxStackSize;
-                CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"{fromInventory.m_name}");
+                OttoPayPlugin.OttoPayLogger.LogDebug($"{fromInventory.m_name}");
                 if (itemAt.m_stack < maxStack && fromInventory.m_name == CoinCountCustomData)
                 {
                     int coinsToAdd = Math.Min(item.m_stack, maxStack - itemAt.m_stack);
                     fromInventory.RemoveItem(item, coinsToAdd);
                     fromInventory.Changed();
                     __instance.m_inventory.Changed();
-                    CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"Added {coinsToAdd} coins to the item at {pos.x}, {pos.y}");
+                    OttoPayPlugin.OttoPayLogger.LogDebug($"Added {coinsToAdd} coins to the item at {pos.x}, {pos.y}");
                 }
             }
 
-            CurrencyPocketPlugin.CurrencyPocketLogger.LogDebug($"Item at {pos.x}, {pos.y} is not the same as the item being dropped., first block reached");
+            OttoPayPlugin.OttoPayLogger.LogDebug($"Item at {pos.x}, {pos.y} is not the same as the item being dropped., first block reached");
             return;
         }
     }

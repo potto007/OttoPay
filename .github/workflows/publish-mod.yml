@@ -1,78 +1,101 @@
 name: Publish Mod
 
+# Publishing runs on a version tag only. The Valheim assemblies are not
+# redistributable, so CI cannot compile the mod. Build the Release
+# configuration locally first: it writes Thunderstore/potto007-OttoStash-<version>.zip.
+# Commit that zip, then push the tag.
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to publish'
+        required: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    steps:
-      # 1. Check out the repository code.
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    permissions:
+      contents: write
 
-      # 2. Extract information from Thunderstore/manifest.json and set up variables.
-      - name: Extract manifest and set up variables
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Read the manifest and locate the package
         id: manifest
         shell: bash
         run: |
-          TAG="${GITHUB_REF##*/}"
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          set -euo pipefail
 
-          mod_name=$(jq -r '.name' Thunderstore/manifest.json)
-          mod_version=$(jq -r '.version_number' Thunderstore/manifest.json)
-          mod_description=$(jq -r '.description' Thunderstore/manifest.json)
+          mod_name=$(jq -re '.name' Thunderstore/manifest.json)
+          mod_version=$(jq -re '.version_number' Thunderstore/manifest.json)
+          mod_description=$(jq -re '.description' Thunderstore/manifest.json)
 
-          ZIP_FILE="Thunderstore/${mod_name}_v${mod_version}.zip"
-          ZIP_FILENAME=$(basename "${ZIP_FILE}")
-
-          echo "mod_name=${mod_name}" >> $GITHUB_OUTPUT
-          echo "mod_version=${mod_version}" >> $GITHUB_OUTPUT
-          echo "mod_description=${mod_description}" >> $GITHUB_OUTPUT
-          echo "zip_file=${ZIP_FILE}" >> $GITHUB_OUTPUT
-          echo "zip_filename=${ZIP_FILENAME}" >> $GITHUB_OUTPUT
-
-          if [ ! -f "${ZIP_FILE}" ]; then
-            echo "Error: Zip file '${ZIP_FILE}' does not exist." >&2
+          # The source constant and the manifest must agree.
+          src_version=$(grep -oP 'ModVersion\s*=\s*"\K[^"]+' Plugin.cs)
+          if [ "${src_version}" != "${mod_version}" ]; then
+            echo "::error::Version drift: Plugin.cs says ${src_version}, manifest.json says ${mod_version}." >&2
             exit 1
           fi
 
-      # 3. Create a GitHub release using the pushed tag.
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The tag must agree too, so a stale zip cannot ship under a new tag.
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          if [ "${tag#v}" != "${mod_version}" ]; then
+            echo "::error::Tag ${tag} does not match version ${mod_version}." >&2
+            exit 1
+          fi
+
+          zip_file="Thunderstore/potto007-${mod_name}-${mod_version}.zip"
+          if [ ! -f "${zip_file}" ]; then
+            echo "::error::${zip_file} is missing. Build Release locally and commit the zip." >&2
+            exit 1
+          fi
+
+          {
+            echo "tag=${tag}"
+            echo "mod_name=${mod_name}"
+            echo "mod_version=${mod_version}"
+            echo "mod_description=${mod_description}"
+            echo "zip_file=${zip_file}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Confirm the package contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -l "${{ steps.manifest.outputs.zip_file }}"
+          for required in "${{ steps.manifest.outputs.mod_name }}.dll" manifest.json icon.png README.md CHANGELOG.md; do
+            unzip -l "${{ steps.manifest.outputs.zip_file }}" | grep -q " ${required}$" \
+              || { echo "::error::${required} is missing from the package." >&2; exit 1; }
+          done
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.manifest.outputs.tag }}
-          release_name: Release ${{ steps.manifest.outputs.tag }}
-          draft: false
-          prerelease: false
+          name: ${{ steps.manifest.outputs.mod_name }} ${{ steps.manifest.outputs.mod_version }}
+          files: ${{ steps.manifest.outputs.zip_file }}
+          generate_release_notes: true
 
-      # 4. Upload the zip file as a release asset.
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.manifest.outputs.zip_file }}
-          asset_name: ${{ steps.manifest.outputs.zip_filename }}
-          asset_content_type: application/zip
-
-      # 5. Publish the package to Thunderstore using the uploaded zip.
-      - name: Publish package to Thunderstore
+      - name: Publish the package to Thunderstore
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
-          namespace: Azumatt
-          description: ${{ steps.manifest.outputs.mod_description }}
-          token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          # Override with the repository variable THUNDERSTORE_NAMESPACE if the team changes.
+          namespace: ${{ vars.THUNDERSTORE_NAMESPACE || 'potto007' }}
           name: ${{ steps.manifest.outputs.mod_name }}
+          description: ${{ steps.manifest.outputs.mod_description }}
           version: ${{ steps.manifest.outputs.mod_version }}
+          token: ${{ secrets.THUNDERSTORE_TOKEN }}
           community: valheim
           repo: https://thunderstore.io/c/valheim/
           file: ${{ steps.manifest.outputs.zip_file }}
           categories: |
-            bog-witch-update
+            utility
+            tweaks
+            client-side
+            server-side

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CurrencyPocket;
+namespace OttoPay;
 
 public class MiscFunctions
 {

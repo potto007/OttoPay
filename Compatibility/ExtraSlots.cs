@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 
-namespace CurrencyPocket.Compatibility;
+namespace OttoPay.Compatibility;
 
 internal static class ExtraSlotsCompat
 {

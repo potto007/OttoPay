@@ -1,6 +1,6 @@
-﻿using BepInEx.Bootstrap;
+using BepInEx.Bootstrap;
 
-namespace CurrencyPocket.Compatibility;
+namespace OttoPay.Compatibility;
 
 public class RapidLoadoutsCompat
 {
@@ -10,7 +10,7 @@ public class RapidLoadoutsCompat
         if (rapidLoadoutsInfo != null && rapidLoadoutsInfo.Instance)
         {
             // RapidLoadouts is loaded
-            CurrencyPocketPlugin.instance._harmony.PatchAll(typeof(RapidLoadoutsCompat));
+            OttoPayPlugin.instance._harmony.PatchAll(typeof(RapidLoadoutsCompat));
         }
     }
 
