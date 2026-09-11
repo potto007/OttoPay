@@ -1,6 +1,6 @@
 {
   "name": "OttoPay",
-  "version_number": "1.1.2",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/potto007/OttoPay",
   "description": "A coin pouch on your character. Coins go in the pouch instead of taking an inventory slot. Based on CurrencyPocket by Azumatt.",
   "dependencies": [

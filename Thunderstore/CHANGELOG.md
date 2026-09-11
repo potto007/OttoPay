@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Add hover tooltips to the join button, the withdraw button, the AuraPay toggle and the
+  pouch itself.
+- Show the joining message inside the store window, which draws in front of it. The heads
+  up display message was hidden behind the shop interface.
+- The AuraPay toggle now reads AuraPay rather than Aura.
+
 ## 1.1.2
 
 - Move the join button clear of the store panel and stop its label wrapping.

@@ -36,8 +36,20 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void OnPointerEnter(PointerEventData eventData)
     {
         TryCreateTooltip();
-        if (!InventoryGui.m_instance || uiTooltip == null || !InventoryGui.m_instance.m_dragGo || InventoryGui.m_instance.m_dragItem == null) return;
-        uiTooltip.Set("Coin Drop", "Click here to store coins in your pocket.");
+        if (!InventoryGui.m_instance || uiTooltip == null) return;
+
+        bool dragging = InventoryGui.m_instance.m_dragGo && InventoryGui.m_instance.m_dragItem != null;
+        if (dragging)
+        {
+            uiTooltip.Set("Coin Drop", "Click here to store coins in your pocket.");
+        }
+        else
+        {
+            // Without this the pouch explained itself only while something was being dragged.
+            uiTooltip.Set("Coin pouch",
+                $"{MiscFunctions.GetPlayerCoinsFromCustomData()} coins are in your Merchant Bank pouch.\n\nDrag coins onto this icon to store them. Merchants count pouch coins as your own.");
+        }
+
         uiTooltip.OnHoverStart(gameObject);
     }
 

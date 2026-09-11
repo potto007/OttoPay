@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -62,7 +63,7 @@ static class MerchantBankJoinButton
             label.text = JoinLabel;
             // Shrink to fit rather than wrap. The label is three words in a one line button,
             // and wrapping pushed half of it outside the button box.
-            label.enableWordWrapping = false;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
             label.overflowMode = TextOverflowModes.Overflow;
             label.enableAutoSizing = true;
             label.fontSizeMin = 9f;
@@ -102,6 +103,9 @@ static class MerchantBankJoinButton
         float alignLeft = rect.pivot.x * (wanted.x - sell.rect.width);
         rect.anchoredPosition = sell.anchoredPosition + new Vector2(alignLeft, sell.rect.height + 8f);
 
+        Tooltips.Attach(button.gameObject, "Merchant Bank",
+            "Join the Merchant Bank Network.\n\nCoins you pick up go into a pouch on your character instead of taking an inventory slot. You can take them out again whenever you like, and merchants still see them as coins.");
+
         _joinButton = button;
         Vector2 got = rect.rect.size;
         OttoPayPlugin.OttoPayLogger.LogInfo(
@@ -122,12 +126,74 @@ static class MerchantBankJoinButton
 
         OttoPayApi.JoinBank();
         string merchant = gui.m_trader != null ? Localization.instance.Localize(gui.m_trader.m_name) : "The merchant";
-        player.Message(MessageHud.MessageType.Center, $"{merchant} signs you into the Merchant Bank Network. Coins you pick up now go to your pouch.");
+        string welcome = $"{merchant} signs you into the Merchant Bank Network.\nCoins you pick up now go to your pouch.";
+        // The heads up display draws behind the store window, so the same line is also shown
+        // inside the window. Otherwise a player only sees it by closing the shop in time.
+        player.Message(MessageHud.MessageType.Center, welcome);
+        ShowStoreMessage(gui, welcome);
+
         if (_joinButton != null)
         {
             _joinButton.gameObject.SetActive(false);
         }
 
         gui.FillList();
+    }
+
+    private static GameObject? _message;
+
+    // Drawn as the last child of the store panel, so it sits in front of everything the
+    // panel draws. A heads up display message cannot do that.
+    private static void ShowStoreMessage(StoreGui gui, string text)
+    {
+        if (gui.m_rootPanel == null) return;
+        if (_message != null) Object.Destroy(_message);
+
+        GameObject panel = new("OttoPayStoreMessage", typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(gui.m_rootPanel.transform, false);
+        panel.transform.SetAsLastSibling();
+
+        RectTransform rect = (RectTransform)panel.transform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(250f, 130f);
+        rect.anchoredPosition = Vector2.zero;
+
+        Image background = panel.GetComponent<Image>();
+        background.color = new Color(0.06f, 0.05f, 0.04f, 0.93f);
+        background.raycastTarget = false;
+
+        GameObject textObject = new("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(panel.transform, false);
+        RectTransform textRect = (RectTransform)textObject.transform;
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(12f, 12f);
+        textRect.offsetMax = new Vector2(-12f, -12f);
+
+        TextMeshProUGUI label = textObject.GetComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.alignment = TextAlignmentOptions.Center;
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 10f;
+        label.fontSizeMax = 18f;
+        label.raycastTarget = false;
+        if (gui.m_coinText != null)
+        {
+            label.font = gui.m_coinText.font;
+            label.color = gui.m_coinText.color;
+        }
+
+        _message = panel;
+        gui.StartCoroutine(HideMessageAfter(6f));
+    }
+
+    private static IEnumerator HideMessageAfter(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        if (_message != null)
+        {
+            Object.Destroy(_message);
+            _message = null;
+        }
     }
 }

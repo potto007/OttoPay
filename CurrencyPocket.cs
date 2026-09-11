@@ -276,7 +276,16 @@ public class CurrencyPocket
         if (InventoryGuiUpdatePatch.AuraPayButton == null) return;
         TextMeshProUGUI? label = InventoryGuiUpdatePatch.AuraPayButton.GetComponentInChildren<TextMeshProUGUI>();
         if (label == null) return;
-        label.text = OttoPayApi.IsAuraPayEnabled() ? "<color=#7CFFB2>Aura</color>" : "<color=#8A8A8A>Aura</color>";
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode = TextOverflowModes.Overflow;
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 8f;
+        bool on = OttoPayApi.IsAuraPayEnabled();
+        label.text = on ? "<color=#7CFFB2>AuraPay</color>" : "<color=#8A8A8A>AuraPay</color>";
+        Tooltips.Attach(InventoryGuiUpdatePatch.AuraPayButton.gameObject, "AuraPay",
+            on
+                ? "AuraPay is on.\n\nA ward aura may take coins from your pouch to repair the gear you are wearing. Click to turn it off."
+                : "AuraPay is off.\n\nWard auras will not take coins from your pouch. Click to turn it on and let an aura repair your gear for a fee.");
     }
 
     private static void CreateAuraPayToggle(InventoryGui gui)
@@ -368,6 +377,9 @@ public class CurrencyPocket
 
         buttonRectTransform.localPosition = new Vector3(2.5f, -20, 0);
         InventoryGuiUpdatePatch.ExtractButton.transform.localScale = new Vector3(0.4f, 0.4f, 1);
+
+        Tooltips.Attach(InventoryGuiUpdatePatch.ExtractButton.gameObject, "Withdraw coins",
+            "Take every coin out of your pouch and put it in your inventory.\n\nDrop coins back onto the pouch icon to store them again.");
     }
 
     private static void CreateIcon()
