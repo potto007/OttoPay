@@ -60,8 +60,12 @@ static class MerchantBankJoinButton
         foreach (TextMeshProUGUI label in labels)
         {
             label.text = JoinLabel;
+            // Shrink to fit rather than wrap. The label is three words in a one line button,
+            // and wrapping pushed half of it outside the button box.
+            label.enableWordWrapping = false;
+            label.overflowMode = TextOverflowModes.Overflow;
             label.enableAutoSizing = true;
-            label.fontSizeMin = 10f;
+            label.fontSizeMin = 9f;
         }
 
         RectTransform sell = gui.m_sellButton.GetComponent<RectTransform>();
@@ -72,7 +76,7 @@ static class MerchantBankJoinButton
         // sizeDelta is an inset from the parent and is negative. Copying Sell's point anchors
         // turns that inset into an absolute width, which made the button 40 pixels wide in the
         // negative direction and therefore invisible.
-        Vector2 wanted = new(Mathf.Max(buy.rect.width, 160f), Mathf.Max(sell.rect.height, 32f));
+        Vector2 wanted = new(Mathf.Max(buy.rect.width, 210f), Mathf.Max(sell.rect.height, 36f));
 
         // Copy the Sell button's anchoring so the offset below is measured against the same
         // corner. Buy and Sell do not share anchors.
@@ -91,7 +95,12 @@ static class MerchantBankJoinButton
         }
 
         rect.sizeDelta = wanted - span;
-        rect.anchoredPosition = sell.anchoredPosition + new Vector2(0f, sell.rect.height + 8f);
+
+        // Line the left edges up instead of the centres. Sell is a narrow icon, so a centred
+        // wide button grows back under the store panel and hides its own first word.
+        // anchoredPosition addresses the pivot, so the shift is scaled by the pivot.
+        float alignLeft = rect.pivot.x * (wanted.x - sell.rect.width);
+        rect.anchoredPosition = sell.anchoredPosition + new Vector2(alignLeft, sell.rect.height + 8f);
 
         _joinButton = button;
         Vector2 got = rect.rect.size;

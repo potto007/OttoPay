@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Move the join button clear of the store panel and stop its label wrapping.
+
 ## 1.1.1
 
 - Fix the join button being invisible. Its width came out negative, because the Buy button
