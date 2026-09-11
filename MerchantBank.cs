@@ -65,17 +65,45 @@ static class MerchantBankJoinButton
         }
 
         RectTransform sell = gui.m_sellButton.GetComponent<RectTransform>();
+        RectTransform buy = gui.m_buyButton.GetComponent<RectTransform>();
         RectTransform rect = button.GetComponent<RectTransform>();
+
+        // Read the real rendered size before touching anchors. Buy is stretch anchored, so its
+        // sizeDelta is an inset from the parent and is negative. Copying Sell's point anchors
+        // turns that inset into an absolute width, which made the button 40 pixels wide in the
+        // negative direction and therefore invisible.
+        Vector2 wanted = new(Mathf.Max(buy.rect.width, 160f), Mathf.Max(sell.rect.height, 32f));
+
         // Copy the Sell button's anchoring so the offset below is measured against the same
         // corner. Buy and Sell do not share anchors.
         rect.anchorMin = sell.anchorMin;
         rect.anchorMax = sell.anchorMax;
         rect.pivot = sell.pivot;
+
+        // sizeDelta is measured on top of whatever the anchors already span, so subtract that
+        // span to land on the size we actually want, whatever the anchors turn out to be.
+        Vector2 span = Vector2.zero;
+        if (button.transform.parent is RectTransform parent)
+        {
+            Vector2 parentSize = parent.rect.size;
+            span = new Vector2((rect.anchorMax.x - rect.anchorMin.x) * parentSize.x,
+                               (rect.anchorMax.y - rect.anchorMin.y) * parentSize.y);
+        }
+
+        rect.sizeDelta = wanted - span;
         rect.anchoredPosition = sell.anchoredPosition + new Vector2(0f, sell.rect.height + 8f);
 
         _joinButton = button;
+        Vector2 got = rect.rect.size;
         OttoPayPlugin.OttoPayLogger.LogInfo(
-            $"Merchant Bank join button created at {rect.anchoredPosition}, size {rect.rect.size}, labels {labels.Length}.");
+            $"Merchant Bank join button created at {rect.anchoredPosition}, size {got}, wanted {wanted}, labels {labels.Length}.");
+        if (got.x <= 1f || got.y <= 1f)
+        {
+            OttoPayPlugin.OttoPayLogger.LogWarning(
+                $"Join button has a degenerate size {got} and will not be visible. Falling back to a fixed size.");
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = wanted;
+        }
     }
 
     private static void Join(StoreGui gui)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- Fix the join button being invisible. Its width came out negative, because the Buy button
+  it is cloned from is stretch anchored and its sizeDelta is an inset, not a width.
+
 ## 1.1.0
 
 - Fix the Merchant Bank join button. It was cloned from the Sell button, which carries no
