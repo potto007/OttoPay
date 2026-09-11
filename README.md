@@ -1,94 +1,43 @@
-# Description
+# OttoPay
 
-## Adds a simple UI and a bit of functionality to store your coins in a "bank" on the player.
+A bank balance for your coins, run by the merchants of Valheim.
 
-Currently, the coins in the pocket do not add weight to the player. This is partially a design choice. When extracting coins from the pocket, the coins will be added to the player's inventory (if space available).
+Talk to any merchant and press the "Join Merchant Bank" button in the store window. From then on, every coin you pick up goes to your Merchant Bank balance instead of your inventory, where it takes no slot and weighs nothing, and any merchant draws on that balance when you buy. Until you join, coins behave exactly as they do in vanilla.
 
-`Client mod, not needed on server.`
----
+Think of it as a mystical ApplePay. The coins are not on your belt - the merchants hold them for you, and they hand them back whenever you ask.
 
-## Mod Compatibility
+## What you get
 
-Seamlessly moves the Jewelcrafting Synergy UI up and all other UI elements around to fit the new UI. Currently not very
-compatible with the buttons from QuickStackStore by GoldenRevolver.
+- The inventory window shows your coin balance next to your armor and weight.
+- Coins you pick up go straight to the balance, and you still see the normal pickup message.
+- Merchants read your balance when you buy, and RapidLoadouts reads it too.
+- A withdraw button opens the split dialog so you can choose how many coins to take, or you can hold Ctrl when you click it to take them all.
+- Drop coins on the coin icon to deposit them again. Items with a coin value, like rubies and amber, can be dropped there as well and are deposited for their value, which the config controls.
+- An AuraPay toggle lets an OttoAura ward charge your balance to repair the gear you wear. It is off until you turn it on, and the choice is saved with the character.
 
-![](https://i.imgur.com/ZEs4ari.png)
+## Client and server
 
-## Features
+OttoPay is a client mod, so it works on a server that does not have it.
 
-![](https://i.imgur.com/o8VuR0K.png)
-
-![](https://i.imgur.com/Uro1yyk.png)
-
-![](https://i.imgur.com/v940vbY.png)
-
-#### **Drag and click to drop coins into the pocket**
-
-![](https://i.imgur.com/kHaYgtM.png)
-
-# Demo on how to use
-
-![](https://i.imgur.com/DHD3ogl.gif)
+If you also install it on the server, the server config wins and the clients follow it. Clients without the mod can still join.
 
 ## Configuration
 
-### Valuable Items Settings
+The config file is `potto007.OttoPay.cfg` in the BepInEx config folder, and the mod reloads it when the file changes.
 
-- **AllowValuableItems** - When `false`: Only coins can be deposited
-- **AllowValuableItems** - When `true` and **AllowedValuablePrefabs** is empty: All valuable items can be converted to coins
-- **AllowValuableItems** - When `true` and **AllowedValuablePrefabs** = `Ruby,Amber`: Only Ruby and Amber prefabs (plus coins) can be deposited
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| Lock Configuration | On | Only server admins can change the config, and the setting is synced with the server. |
+| AllowValuableItems | true | Items with a coin value can be dropped on the coin icon and deposited for that value. |
+| AllowedValuablePrefabs | empty | Comma separated prefab names, for example `Ruby,Amber`. When set, only those items and coins can be deposited. When empty, every valuable item can be. |
 
-<details>
-<summary><b>Installation Instructions</b></summary>
+## Other mods
 
-***You must have BepInEx installed correctly! I can not stress this enough.***
+- OttoAura draws on the balance through AuraPay when it charges for aura repairs.
+- CurrencyPocket by Azumatt cannot run next to OttoPay. Both mods keep the coins under the same player data key, so BepInEx refuses to load OttoPay beside it. A balance you built up with CurrencyPocket carries over, and a character with coins in it already counts as a bank member.
+- Jewelcrafting and QuickStackStore move the inventory panels too. OttoPay moves them to make room for the balance, and with one of these installed the coin balance keeps its place while the other panels shift instead.
+- ExtraSlots keeps lists of panels. OttoPay removes its own panel from those lists when they hold more panels than the row count allows.
 
-### Manual Installation
+## Credits
 
-`Note: (Manual installation is likely how you have to do this on a server, make sure BepInEx is installed on the server correctly)`
-
-1. **Download the latest release of BepInEx.**
-2. **Extract the contents of the zip file to your game's root folder.**
-3. **Download the latest release of CurrencyPocket from Thunderstore.io.**
-4. **Extract the contents of the zip file to the `BepInEx/plugins` folder.**
-5. **Launch the game.**
-
-### Installation through r2modman or Thunderstore Mod Manager
-
-1. **Install [r2modman](https://valheim.thunderstore.io/package/ebkr/r2modman/)
-   or [Thunderstore Mod Manager](https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager).**
-
-   > For r2modman, you can also install it through the Thunderstore site.
-   ![](https://i.imgur.com/s4X4rEs.png "r2modman Download")
-
-   > For Thunderstore Mod Manager, you can also install it through the Overwolf app store
-   ![](https://i.imgur.com/HQLZFp4.png "Thunderstore Mod Manager Download")
-2. **Open the Mod Manager and search for "CurrencyPocket" under the Online
-   tab. `Note: You can also search for "Azumatt" to find all my mods.`**
-
-   `The image below shows VikingShip as an example, but it was easier to reuse the image.`
-
-   ![](https://i.imgur.com/5CR5XKu.png)
-
-3. **Click the Download button to install the mod.**
-4. **Launch the game.**
-
-</details>
-
-<br>
-<br>
-
-`Feel free to reach out to me on discord if you need manual download assistance.`
-
-# Author Information
-
-### Azumatt
-
-`DISCORD:` Azumatt#2625
-
-`STEAM:` https://steamcommunity.com/id/azumatt/
-
-For Questions or Comments, find me in the Odin Plus Team Discord or in mine:
-
-[![https://i.imgur.com/XXP6HCU.png](https://i.imgur.com/XXP6HCU.png)](https://discord.gg/qhr2dWNEYq)
-<a href="https://discord.gg/pdHgy6Bsng"><img src="https://i.imgur.com/Xlcbmm9.png" href="https://discord.gg/pdHgy6Bsng" width="175" height="175"></a>
+OttoPay started from CurrencyPocket 1.0.13 by Azumatt, under the MIT No Attribution license. The Merchant Bank Network, the join button, the withdraw dialog, AuraPay and the tooltips are new, so the bugs in them are mine. Report them at https://github.com/potto007/OttoPay.

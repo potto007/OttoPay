@@ -2,38 +2,39 @@
 
 ## 1.3.0
 
-- Fix tooltips that showed without their box. The controls got their tooltips while the
-  inventory loaded, before any slot existed, so they borrowed an unboxed tooltip style. All
-  tooltips now use the inventory slot style.
-- Stop the coin icon taking over the tooltips of the buttons on top of it. The icon also no
+- Every tooltip now uses the inventory slot box. Some controls got their tooltip before the
+  inventory finished loading and before any slot existed, so they ended up with an unboxed style.
+- The coin icon no longer answers hovers meant for the buttons on top of it, and it no
   longer rewrites the first inventory slot's tooltip.
-- Correct the withdraw tooltip. The button opens a dialog to take some coins, not all.
-- The Merchant Bank holds your coins as a magical balance, not a pouch. All player facing
-  text now says so.
+- The withdraw tooltip was wrong, because the button opens a dialog to take some coins, not all.
+- All player facing text now calls your coins a Merchant Bank balance instead of a pouch.
+- New README, with the config table and the compatibility notes.
 
 ## 1.2.0
 
-- Add hover tooltips to the join button, the withdraw button, the AuraPay toggle and the
-  pouch itself.
-- Show the joining message inside the store window, which draws in front of it. The heads
-  up display message was hidden behind the shop interface.
-- The AuraPay toggle now reads AuraPay rather than Aura.
+- Hover tooltips on the join button, the withdraw button, the AuraPay toggle and the coin
+  icon.
+- The joining message now shows inside the store window. The heads up display drew it
+  behind the shop, so you only saw it if you closed the shop in time.
+- The toggle reads AuraPay, not Aura.
 
 ## 1.1.2
 
-- Move the join button clear of the store panel and stop its label wrapping.
+- The join button sits clear of the store panel, and its label no longer wraps.
 
 ## 1.1.1
 
-- Fix the join button being invisible. Its width came out negative, because the Buy button
-  it is cloned from is stretch anchored and its sizeDelta is an inset, not a width.
+- The join button was invisible. It is cloned from the Buy button, which is stretch
+  anchored, so the copied sizeDelta was an inset and the width came out negative.
 
 ## 1.1.0
 
-- Fix the Merchant Bank join button. It was cloned from the Sell button, which carries no
-  text label, so it appeared as a second unlabelled coin icon. It now reads "Join Merchant
-  Bank" and logs its position when it is created.
+- The join button was a second, unlabelled coin icon, because it was cloned from the Sell
+  button, which has no text child. It is cloned from Buy now and reads "Join Merchant Bank".
 
 ## 1.0.0
 
-- First release built on CurrencyPocket 1.0.13 by Azumatt, for Valheim 1.0.7.
+- First release, from CurrencyPocket 1.0.13 by Azumatt, for Valheim 1.0.7.
+- Coins go to the bank only after you join the Merchant Bank Network at a merchant, and until
+  then they behave as in vanilla.
+- AuraPay toggle, so OttoAura can charge your balance for repairs.

@@ -10,7 +10,7 @@ using OttoPay;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany(OttoPayPlugin.Author)]
 [assembly: AssemblyProduct(OttoPayPlugin.ModName)]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCopyright("Copyright © 2026 potto007. Based on CurrencyPocket, Copyright © 2021 Azumatt.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
