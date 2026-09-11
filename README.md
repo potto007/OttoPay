@@ -1,5 +1,7 @@
 # OttoPay
 
+![OttoPay. Your gold, always with you.](https://raw.githubusercontent.com/potto007/OttoPay/master/docs/images/ottopay-title.png)
+
 A bank balance for your coins, run by the merchants of Valheim.
 
 Talk to any merchant and press the "Join Merchant Bank" button in the store window. From then on, every coin you pick up goes to your Merchant Bank balance instead of your inventory, where it takes no slot and weighs nothing, and any merchant draws on that balance when you buy. Until you join, coins behave exactly as they do in vanilla.

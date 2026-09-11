@@ -9,6 +9,7 @@
 - The withdraw tooltip was wrong, because the button opens a dialog to take some coins, not all.
 - All player facing text now calls your coins a Merchant Bank balance instead of a pouch.
 - New README, with the config table and the compatibility notes.
+- New icon and title art.
 
 ## 1.2.0
 
