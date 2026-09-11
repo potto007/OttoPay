@@ -33,7 +33,7 @@ public class CurrencyPocket
                 CreateButton(__instance);
             }
 
-            // The toggle only means something when OttoAura is there to charge the pouch.
+            // The toggle only means something when OttoAura is there to charge the balance.
             if (AuraPayButton == null && pocketUI != null && BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(OttoAuraGUID))
             {
                 CreateAuraPayToggle(__instance);
@@ -55,7 +55,7 @@ public class CurrencyPocket
         [HarmonyPriority(Priority.VeryLow)]
         private static void Postfix(InventoryGui __instance)
         {
-            // The panels only shift to make room for the pouch once there is a pouch to show.
+            // The panels only shift to make room for the balance once there is one to show.
             if (!OttoPayApi.IsBankMember()) return;
 
             if (cached)
@@ -172,8 +172,8 @@ public class CurrencyPocket
         }
     }
 
-    // A purchase removes its price from the coins the player carries first. The pouch pays
-    // only the part those coins did not cover. The upstream patch charged the pouch the full
+    // A purchase removes its price from the coins the player carries first. The balance pays
+    // only the part those coins did not cover. The upstream patch charged the balance the full
     // price on top, so a player carrying coins paid twice.
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem), typeof(string), typeof(int), typeof(int), typeof(bool))]
     public static class Inventory_RemoveItem_Patch
@@ -260,7 +260,7 @@ public class CurrencyPocket
     internal static void UpdatePocketUI()
     {
         if (InventoryGuiUpdatePatch.pocketUI == null) return;
-        // No pouch until the player joins the Merchant Bank Network.
+        // No balance until the player joins the Merchant Bank Network.
         InventoryGuiUpdatePatch.pocketUI.SetActive(OttoPayApi.IsBankMember());
         // Update the UI with the current coin count
         Transform? coinText = Utils.FindChild(InventoryGuiUpdatePatch.pocketUI.transform, AcText);
@@ -268,6 +268,9 @@ public class CurrencyPocket
         TextMeshProUGUI coinTextTMP = coinText.GetComponent<TextMeshProUGUI>();
         if (coinTextTMP == null) return;
         coinTextTMP.text = $"{GetPlayerCoinsFromCustomData()}";
+        // Runs on every inventory open too, so a tooltip that found no prefab at start-up
+        // still gets one.
+        AttachWithdrawTooltip();
         UpdateAuraPayToggle();
     }
 
@@ -284,8 +287,8 @@ public class CurrencyPocket
         label.text = on ? "<color=#7CFFB2>AuraPay</color>" : "<color=#8A8A8A>AuraPay</color>";
         Tooltips.Attach(InventoryGuiUpdatePatch.AuraPayButton.gameObject, "AuraPay",
             on
-                ? "AuraPay is on.\n\nA ward aura may take coins from your pouch to repair the gear you are wearing. Click to turn it off."
-                : "AuraPay is off.\n\nWard auras will not take coins from your pouch. Click to turn it on and let an aura repair your gear for a fee.");
+                ? "AuraPay is on.\n\nA ward aura may charge your Merchant Bank balance to repair the gear you are wearing. Click to turn it off."
+                : "AuraPay is off.\n\nWard auras will not charge your Merchant Bank balance. Click to turn it on and let an aura repair your gear for a fee.");
     }
 
     private static void CreateAuraPayToggle(InventoryGui gui)
@@ -293,12 +296,13 @@ public class CurrencyPocket
         Button button = Object.Instantiate(gui.m_takeAllButton, InventoryGuiUpdatePatch.pocketUI.transform);
         button.name = AuraPayButtonName;
         button.transform.SetParent(InventoryGuiUpdatePatch.pocketUI.transform, false);
+        Tooltips.Strip(button.gameObject);
         button.onClick = new Button.ButtonClickedEvent();
         button.onClick.AddListener(() =>
         {
             bool enabled = !OttoPayApi.IsAuraPayEnabled();
             OttoPayApi.SetAuraPayEnabled(enabled);
-            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, enabled ? "AuraPay on: ward auras may take coins from your pouch." : "AuraPay off: ward auras will not take coins.");
+            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, enabled ? "AuraPay on: ward auras may charge your Merchant Bank balance." : "AuraPay off: ward auras will not charge your balance.");
         });
 
         UIGamePad? pad = button.GetComponent<UIGamePad>();
@@ -342,6 +346,9 @@ public class CurrencyPocket
         InventoryGuiUpdatePatch.pocketUI.transform.Find(ArmorIconName).GetComponent<Image>().sprite = InventoryGuiUpdatePatch.coinSprite;
         InventoryGuiUpdatePatch.pocketUI.transform.SetSiblingIndex(inv.Find(ArmorName).GetSiblingIndex());
         InventoryGuiUpdatePatch.pocketUI.transform.Find(AcText).GetComponent<TextMeshProUGUI>().text = $"{GetPlayerCoinsFromCustomData()}";
+        // The armor readout it is cloned from may carry a vanilla tooltip. Left in place, it
+        // answers the pointer for the buttons on top of the icon too, in its own style.
+        Tooltips.Strip(InventoryGuiUpdatePatch.pocketUI);
         InventoryGuiUpdatePatch.pocketUI.AddComponent<PocketDrop>();
     }
 
@@ -378,8 +385,15 @@ public class CurrencyPocket
         buttonRectTransform.localPosition = new Vector3(2.5f, -20, 0);
         InventoryGuiUpdatePatch.ExtractButton.transform.localScale = new Vector3(0.4f, 0.4f, 1);
 
+        Tooltips.Strip(InventoryGuiUpdatePatch.ExtractButton.gameObject);
+        AttachWithdrawTooltip();
+    }
+
+    internal static void AttachWithdrawTooltip()
+    {
+        if (InventoryGuiUpdatePatch.ExtractButton == null) return;
         Tooltips.Attach(InventoryGuiUpdatePatch.ExtractButton.gameObject, "Withdraw coins",
-            "Take every coin out of your pouch and put it in your inventory.\n\nDrop coins back onto the pouch icon to store them again.");
+            "Take coins from your Merchant Bank balance and put them in your inventory.\n\nChoose how many in the dialog. Hold Ctrl when you click to take them all.\n\nDrop coins on the coin icon to deposit them again.");
     }
 
     private static void CreateIcon()

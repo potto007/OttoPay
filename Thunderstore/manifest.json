@@ -1,8 +1,8 @@
 {
   "name": "OttoPay",
-  "version_number": "1.2.0",
+  "version_number": "1.3.0",
   "website_url": "https://github.com/potto007/OttoPay",
-  "description": "A coin pouch on your character. Coins go in the pouch instead of taking an inventory slot. Based on CurrencyPocket by Azumatt.",
+  "description": "Join the Merchant Bank Network at any merchant. Coins you pick up go to a magical bank balance, not your inventory, and merchants draw on it when you buy. Based on CurrencyPocket by Azumatt.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350"
   ]

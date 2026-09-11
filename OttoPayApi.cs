@@ -9,7 +9,7 @@ public static class OttoPayApi
     public const string AuraPayCustomData = "OttoPay_AuraPay";
     public const string BankMemberCustomData = "OttoPay_BankMember";
 
-    // A player joins the Merchant Bank Network at a merchant. Coins already in the pouch,
+    // A player joins the Merchant Bank Network at a merchant. Coins already in the balance,
     // from CurrencyPocket or an earlier OttoPay, count as membership, so no coins are ever
     // hidden from a player who never joined.
     public static bool IsBankMember()

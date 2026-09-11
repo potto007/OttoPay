@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0
+
+- Fix tooltips that showed without their box. The controls got their tooltips while the
+  inventory loaded, before any slot existed, so they borrowed an unboxed tooltip style. All
+  tooltips now use the inventory slot style.
+- Stop the coin icon taking over the tooltips of the buttons on top of it. The icon also no
+  longer rewrites the first inventory slot's tooltip.
+- Correct the withdraw tooltip. The button opens a dialog to take some coins, not all.
+- The Merchant Bank holds your coins as a magical balance, not a pouch. All player facing
+  text now says so.
+
 ## 1.2.0
 
 - Add hover tooltips to the join button, the withdraw button, the AuraPay toggle and the

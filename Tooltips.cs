@@ -2,55 +2,66 @@ using System.Linq;
 
 namespace OttoPay;
 
-// Vanilla hover tooltips for the controls this mod adds. UITooltip already handles pointer
-// enter and exit by itself, so attaching one is enough. It only needs the prefab that the
-// vanilla UI uses, which is not reachable from a static field, so it is borrowed from a
-// control that already has one.
+// Vanilla hover tooltips for the controls this mod adds. UITooltip handles pointer enter and
+// exit by itself, but every UITooltip shares one static tooltip object. Whichever component
+// hovers first decides which prefab that object is built from, and whichever hovers last
+// decides its text. Two rules keep the look consistent:
+//   1. Every tooltip in this mod uses the same prefab, the boxed one from an inventory slot.
+//   2. Only one UITooltip per control. Clones of vanilla widgets bring their own, with their
+//      own prefab, so those are stripped before ours goes on.
 internal static class Tooltips
 {
     private static GameObject? _prefab;
 
-    private static GameObject? Prefab()
+    internal static GameObject? Prefab()
     {
         if (_prefab != null) return _prefab;
 
-        // First choice: an inventory slot, which always carries a tooltip.
-        UITooltip? slot = InventoryGui.instance != null && InventoryGui.instance.m_playerGrid != null
-            ? InventoryGui.instance.m_playerGrid.m_elements.FirstOrDefault()?.m_tooltip
-            : null;
-        if (slot != null && slot.m_tooltipPrefab != null)
+        // Only an inventory slot. Other vanilla tooltips use prefabs without the box. The grid
+        // builds its slots on the first redraw, which is after InventoryGui.Awake where our
+        // controls are made, so the slot prefab is read first and a live slot second. The
+        // earlier fallback to any loaded tooltip is what gave some controls an unboxed style.
+        InventoryGrid? grid = InventoryGui.instance != null ? InventoryGui.instance.m_playerGrid : null;
+        if (grid == null) return null;
+        UITooltip? slot = grid.m_elementPrefab != null ? grid.m_elementPrefab.GetComponentInChildren<UITooltip>(true) : null;
+        if (slot == null || slot.m_tooltipPrefab == null)
         {
-            _prefab = slot.m_tooltipPrefab;
-            return _prefab;
+            slot = grid.m_elements.FirstOrDefault()?.m_tooltip;
         }
+        if (slot == null || slot.m_tooltipPrefab == null) return null;
 
-        // Fallback: any loaded tooltip that has the prefab set.
-        foreach (UITooltip candidate in Resources.FindObjectsOfTypeAll<UITooltip>())
-        {
-            if (candidate != null && candidate.m_tooltipPrefab != null)
-            {
-                _prefab = candidate.m_tooltipPrefab;
-                return _prefab;
-            }
-        }
-
-        return null;
+        _prefab = slot.m_tooltipPrefab;
+        OttoPayPlugin.OttoPayLogger.LogInfo($"Tooltips use the '{_prefab.name}' prefab.");
+        return _prefab;
     }
 
-    internal static void Attach(GameObject? target, string topic, string text)
+    // Removes every UITooltip in a cloned subtree, so a vanilla tooltip cannot answer the
+    // pointer before ours does.
+    internal static void Strip(GameObject root)
     {
-        if (target == null) return;
+        foreach (UITooltip stale in root.GetComponentsInChildren<UITooltip>(true))
+        {
+            OttoPayPlugin.OttoPayLogger.LogInfo(
+                $"Removed cloned tooltip on '{stale.name}' (prefab '{(stale.m_tooltipPrefab != null ? stale.m_tooltipPrefab.name : "none")}').");
+            UnityEngine.Object.DestroyImmediate(stale);
+        }
+    }
+
+    internal static UITooltip? Attach(GameObject? target, string topic, string text)
+    {
+        if (target == null) return null;
 
         GameObject? prefab = Prefab();
         if (prefab == null)
         {
-            OttoPayPlugin.OttoPayLogger.LogDebug($"No tooltip prefab found yet, so '{topic}' has no tooltip.");
-            return;
+            OttoPayPlugin.OttoPayLogger.LogWarning($"No tooltip prefab found yet, so '{topic}' has no tooltip.");
+            return null;
         }
 
         UITooltip tooltip = target.GetComponent<UITooltip>() ?? target.AddComponent<UITooltip>();
         tooltip.m_tooltipPrefab = prefab;
         tooltip.m_topic = topic;
         tooltip.m_text = text;
+        return tooltip;
     }
 }

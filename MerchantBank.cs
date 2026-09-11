@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 
 namespace OttoPay;
 
-// The pouch belongs to the Merchant Bank Network. A player joins at any merchant's store
+// The coin balance belongs to the Merchant Bank Network. A player joins at any merchant's store
 // window, and until then coins behave exactly as they do in vanilla.
 [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Show))]
 static class MerchantBankJoinButton
@@ -103,8 +103,9 @@ static class MerchantBankJoinButton
         float alignLeft = rect.pivot.x * (wanted.x - sell.rect.width);
         rect.anchoredPosition = sell.anchoredPosition + new Vector2(alignLeft, sell.rect.height + 8f);
 
+        Tooltips.Strip(button.gameObject);
         Tooltips.Attach(button.gameObject, "Merchant Bank",
-            "Join the Merchant Bank Network.\n\nCoins you pick up go into a pouch on your character instead of taking an inventory slot. You can take them out again whenever you like, and merchants still see them as coins.");
+            "Join the Merchant Bank Network.\n\nCoins you pick up vanish into your Merchant Bank balance, held for you by merchant magic. They take no inventory slot and weigh nothing.\n\nAny merchant draws on your balance when you buy, and you can call coins back into your hand whenever you like.");
 
         _joinButton = button;
         Vector2 got = rect.rect.size;
@@ -126,7 +127,7 @@ static class MerchantBankJoinButton
 
         OttoPayApi.JoinBank();
         string merchant = gui.m_trader != null ? Localization.instance.Localize(gui.m_trader.m_name) : "The merchant";
-        string welcome = $"{merchant} signs you into the Merchant Bank Network.\nCoins you pick up now go to your pouch.";
+        string welcome = $"{merchant} binds you to the Merchant Bank Network.\nCoins you pick up now go straight to your balance.";
         // The heads up display draws behind the store window, so the same line is also shown
         // inside the window. Otherwise a player only sees it by closing the shop in time.
         player.Message(MessageHud.MessageType.Center, welcome);
