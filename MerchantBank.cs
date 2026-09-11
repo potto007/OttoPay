@@ -10,6 +10,7 @@ namespace OttoPay;
 static class MerchantBankJoinButton
 {
     private const string JoinButtonName = "MerchantBankJoinButton";
+    private const string JoinLabel = "Join Merchant Bank";
     private static Button? _joinButton;
 
     static void Postfix(StoreGui __instance)
@@ -27,7 +28,12 @@ static class MerchantBankJoinButton
 
     private static void Create(StoreGui gui)
     {
-        Button button = Object.Instantiate(gui.m_sellButton, gui.m_sellButton.transform.parent);
+        // Cloned from the Buy button, not the Sell button. Sell is a bare coin icon with no
+        // text child, so a clone of it kept the coin art and silently dropped the label. That
+        // put a second, unexplained Sell icon next to the real one.
+        if (gui.m_buyButton == null || gui.m_sellButton == null) return;
+
+        Button button = Object.Instantiate(gui.m_buyButton, gui.m_sellButton.transform.parent);
         button.name = JoinButtonName;
         button.onClick = new Button.ButtonClickedEvent();
         button.onClick.AddListener(() => Join(gui));
@@ -42,15 +48,34 @@ static class MerchantBankJoinButton
             pad.m_keyCode = KeyCode.None;
         }
 
-        TextMeshProUGUI? label = button.GetComponentInChildren<TextMeshProUGUI>();
-        if (label != null)
+        // Localize.Start re-localizes its whole subtree one frame after the clone appears and
+        // would put the Buy token back over our label. The clone carries no vanilla token, so
+        // the component has nothing to do here.
+        foreach (Localize stale in button.GetComponentsInChildren<Localize>(true))
         {
-            label.text = "Join Merchant Bank";
+            Object.Destroy(stale);
+        }
+
+        TextMeshProUGUI[] labels = button.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (TextMeshProUGUI label in labels)
+        {
+            label.text = JoinLabel;
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 10f;
         }
 
         RectTransform sell = gui.m_sellButton.GetComponent<RectTransform>();
-        button.GetComponent<RectTransform>().anchoredPosition = sell.anchoredPosition + new Vector2(0f, sell.rect.height + 8f);
+        RectTransform rect = button.GetComponent<RectTransform>();
+        // Copy the Sell button's anchoring so the offset below is measured against the same
+        // corner. Buy and Sell do not share anchors.
+        rect.anchorMin = sell.anchorMin;
+        rect.anchorMax = sell.anchorMax;
+        rect.pivot = sell.pivot;
+        rect.anchoredPosition = sell.anchoredPosition + new Vector2(0f, sell.rect.height + 8f);
+
         _joinButton = button;
+        OttoPayPlugin.OttoPayLogger.LogInfo(
+            $"Merchant Bank join button created at {rect.anchoredPosition}, size {rect.rect.size}, labels {labels.Length}.");
     }
 
     private static void Join(StoreGui gui)
