@@ -6,8 +6,7 @@
         <ValheimGamePath>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimGamePath>
         <BepInExPath>C:\Users\paulo\AppData\Roaming\com.kesomannen.gale\valheim\profiles\Default\BepInEx</BepInExPath>
         <CorlibPath>$(ValheimGamePath)\valheim_Data\Managed</CorlibPath>
-        <!-- Gale installs this mod under plugins\OttoPay. A potto007-OttoPay folder there only holds a disabled copy. -->
-        <CopyOutputDLLPath>$(BepInExPath)\plugins\OttoPay</CopyOutputDLLPath>
+        <CopyOutputDLLPath>$(BepInExPath)\plugins\potto007-OttoPay</CopyOutputDLLPath>
     </PropertyGroup>
 
     <!-- WSL / Linux build against the same Windows install through /mnt/c. -->
@@ -15,6 +14,6 @@
         <ValheimGamePath>/mnt/c/Program Files (x86)/Steam/steamapps/common/Valheim</ValheimGamePath>
         <BepInExPath>/mnt/c/Users/paulo/AppData/Roaming/com.kesomannen.gale/valheim/profiles/Default/BepInEx</BepInExPath>
         <CorlibPath>$(ValheimGamePath)/valheim_Data/Managed</CorlibPath>
-        <CopyOutputDLLPath>$(BepInExPath)/plugins/OttoPay</CopyOutputDLLPath>
+        <CopyOutputDLLPath>$(BepInExPath)/plugins/potto007-OttoPay</CopyOutputDLLPath>
     </PropertyGroup>
 </Project>
