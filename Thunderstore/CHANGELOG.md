@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0
+
+- AuraPay Pathwalk. The magic of AuraPay makes you feel invigorated and lighter on your feet!
+  As a result, you experience less stamina drain when you don't stray off the roads and
+  trails. It works once you have joined the Merchant Bank and while AuraPay is on, and shows a
+  status icon while it is working.
+- New server synced settings under `2 - AuraPay Pathwalk`: `Enabled`, `StaminaUsageTrail`
+  (default 0.5), `StaminaUsageRoad` (default 0) and `ShowStatusIcon`.
+- The AuraPay toggle shows without OttoAura while Pathwalk is enabled, and its tooltip lists
+  what AuraPay does for you.
+- Pathwalk does not stack with run stamina discounts from other mods' own status effects. The
+  bigger discount wins, while food, meads and Moder's power still stack as usual.
+
 ## 1.3.0
 
 - Every tooltip now uses the inventory slot box. Some controls got their tooltip before the
