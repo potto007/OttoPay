@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="assets/download.png" />
+    <EmbeddedResource Include="assets/pathwalk_icon.png" />
   </ItemGroup>
 
   <ItemGroup>
