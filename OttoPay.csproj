@@ -62,8 +62,13 @@
        reproducible. No manifest records that, so nothing detects it.
 
        The cost of keeping the copy for Debug: after any Debug build the profile is
-       in an unknown state, and only a re-import returns it to a known one. -->
+       in an unknown state, and only a re-import returns it to a known one.
+
+       Gale installs a mod by hardlinking its files to its package cache, and Copy
+       writes into an existing file in place, which would rewrite the cached package
+       and every other profile linked to it. Deleting first breaks only this link. -->
   <Target Name="CopyOutputDLL" AfterTargets="ILRepacker" Condition="'$(Configuration)' == 'Debug' AND '$(CopyOutputDLLPath)' != '' AND Exists('$(CopyOutputDLLPath)')">
+    <Delete Files="$(CopyOutputDLLPath)/$(TargetFileName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(CopyOutputDLLPath)" OverwriteReadOnlyFiles="true" />
   </Target>
 
