@@ -6,7 +6,7 @@ A bank balance for your coins, run by the merchants of Valheim.
 
 Talk to any merchant and press the "Join Merchant Bank" button in the store window. From then on, every coin you pick up goes to your Merchant Bank balance instead of your inventory, where it takes no slot and weighs nothing, and any merchant draws on that balance when you buy. Until you join, coins behave exactly as they do in vanilla.
 
-Think of it as a mystical ApplePay. The coins are not on your belt - the merchants hold them for you, and they hand them back whenever you ask.
+Think of it as a mystical tap-to-pay. The coins are not on your belt - the merchants hold them for you, and the AuraPay network settles your payments on your behalf.
 
 ## What you get
 
