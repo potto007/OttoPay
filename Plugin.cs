@@ -3,7 +3,6 @@ using System.Reflection;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using OttoPay.Compatibility;
-using OttoPay.Pathwalk;
 using JetBrains.Annotations;
 using ServerSync;
 
@@ -34,11 +33,6 @@ public class OttoPayPlugin : BaseUnityPlugin
     private static ConfigEntry<Toggle> _serverConfigLocked = null!;
     internal static ConfigEntry<bool> AllowValuableItems = null!;
     internal static ConfigEntry<string> AllowedValuablePrefabs = null!;
-    internal static ConfigEntry<bool> PathwalkEnabled = null!;
-    internal static ConfigEntry<float> PathwalkStaminaTrail = null!;
-    internal static ConfigEntry<float> PathwalkStaminaRoad = null!;
-    internal static ConfigEntry<bool> PathwalkShowStatusIcon = null!;
-    internal static Sprite? PathwalkSprite;
 
     public enum Toggle
     {
@@ -58,18 +52,11 @@ public class OttoPayPlugin : BaseUnityPlugin
         AllowValuableItems = Config.Bind("1 - General", "AllowValuableItems", true, "If enabled, items with a value greater than 0 can be converted to coins when dropped into the pocket.");
         AllowedValuablePrefabs = Config.Bind("1 - General", "AllowedValuablePrefabs", "", "Comma-separated list of prefab names that are allowed to be converted to coins (e.g., 'Ruby,Amber,AmberPearl'). If empty, all valuable items are allowed when AllowValuableItems is enabled.");
 
-        PathwalkEnabled = config("2 - AuraPay Pathwalk", "Enabled", true, "If on, Merchant Bank members with AuraPay on drain less stamina while running on roads and trails. Also shows the AuraPay toggle when OttoAura is not installed.");
-        PathwalkStaminaTrail = config("2 - AuraPay Pathwalk", "StaminaUsageTrail", 0.5f, new ConfigDescription("Run stamina drain on dirt paths, wood and metal, as a fraction of vanilla. 1 is vanilla, 0 is no drain.", new AcceptableValueRange<float>(0f, 1f)));
-        PathwalkStaminaRoad = config("2 - AuraPay Pathwalk", "StaminaUsageRoad", 0f, new ConfigDescription("Run stamina drain on paved roads and stone, as a fraction of vanilla. 1 is vanilla, 0 is no drain.", new AcceptableValueRange<float>(0f, 1f)));
-        PathwalkShowStatusIcon = config("2 - AuraPay Pathwalk", "ShowStatusIcon", true, "If on, the Pathwalk icon shows in the status bar while the effect is active.");
-        PathwalkEnabled.SettingChanged += (_, _) => CurrencyPocket.UpdateAuraPayToggle();
-
         Assembly assembly = Assembly.GetExecutingAssembly();
         _harmony.PatchAll(assembly);
         SetupWatcher();
 
         DownloadSprite = loadSprite("download.png");
-        PathwalkSprite = loadSprite("pathwalk_icon.png");
 
         Config.Save();
         if (saveOnSet)
@@ -82,17 +69,10 @@ public class OttoPayPlugin : BaseUnityPlugin
     {
         RapidLoadoutsCompat.Init();
         ExtraSlotsCompat.FuckOff();
-        PathwalkEffect.Init();
-    }
-
-    private void Update()
-    {
-        PathwalkEffect.Tick();
     }
 
     private void OnDestroy()
     {
-        PathwalkEffect.Shutdown();
         SaveWithRespectToConfigSet();
         _watcher?.Dispose();
     }

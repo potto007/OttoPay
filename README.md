@@ -16,7 +16,6 @@ Think of it as a mystical tap-to-pay. The coins are not on your belt - the merch
 - A withdraw button opens the split dialog so you can choose how many coins to take, or you can hold Ctrl when you click it to take them all.
 - Drop coins on the coin icon to deposit them again. Items with a coin value, like rubies and amber, can be dropped there as well and are deposited for their value, which the config controls.
 - An AuraPay toggle lets an OttoAura ward charge your balance to repair the gear you wear. It is off until you turn it on, and the choice is saved with the character.
-- **AuraPay Pathwalk.** The magic of AuraPay makes you feel invigorated and lighter on your feet! As a result, you experience less stamina drain when you don't stray off the roads and trails. Once you have joined the Merchant Bank and AuraPay is on, running on dirt paths, wood and metal drains half the usual stamina, and paved roads and stone drain none. A status icon shows while it is working. The toggle appears even without OttoAura while Pathwalk is enabled.
 
 ## Client and server
 
@@ -33,15 +32,10 @@ The config file is `potto007.OttoPay.cfg` in the BepInEx config folder, and the 
 | Lock Configuration | On | Only server admins can change the config, and the setting is synced with the server. |
 | AllowValuableItems | true | Items with a coin value can be dropped on the coin icon and deposited for that value. |
 | AllowedValuablePrefabs | empty | Comma separated prefab names, for example `Ruby,Amber`. When set, only those items and coins can be deposited. When empty, every valuable item can be. |
-| 2 - AuraPay Pathwalk: Enabled | true | Bank members with AuraPay on drain less stamina running on roads and trails. Synced with the server. |
-| 2 - AuraPay Pathwalk: StaminaUsageTrail | 0.5 | Run stamina drain on dirt paths, wood and metal, from 0 (none) to 1 (vanilla). Synced with the server. |
-| 2 - AuraPay Pathwalk: StaminaUsageRoad | 0 | Run stamina drain on paved roads and stone, from 0 (none) to 1 (vanilla). Synced with the server. |
-| 2 - AuraPay Pathwalk: ShowStatusIcon | true | Show the Pathwalk icon in the status bar while the effect is active. Synced with the server. |
 
 ## Other mods
 
-- OttoAura draws on the balance through AuraPay when it charges for aura repairs.
-- Pathwalk does not stack with run stamina discounts that other mods add through their own status effects. When one is active, the bigger discount wins. Food, meads, Moder's power and item mods built on the game's own status effect types still stack with Pathwalk as usual.
+- OttoAura draws on the balance through AuraPay when it charges for aura repairs, and its AuraBoost lightens your feet on roads and trails while AuraPay is on.
 - CurrencyPocket by Azumatt cannot run next to OttoPay. Both mods keep the coins under the same player data key, so BepInEx refuses to load OttoPay beside it. A balance you built up with CurrencyPocket carries over, and a character with coins in it already counts as a bank member.
 - Jewelcrafting and QuickStackStore move the inventory panels too. OttoPay moves them to make room for the balance, and with one of these installed the coin balance keeps its place while the other panels shift instead.
 - ExtraSlots keeps lists of panels. OttoPay removes its own panel from those lists when they hold more panels than the row count allows.

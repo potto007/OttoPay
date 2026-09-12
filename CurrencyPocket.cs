@@ -33,9 +33,8 @@ public class CurrencyPocket
                 CreateButton(__instance);
             }
 
-            // Always built, because Pathwalk can be switched on by the server after this runs.
-            // UpdateAuraPayToggle hides it while it does nothing.
-            if (AuraPayButton == null && pocketUI != null)
+            // The toggle only means something when OttoAura is there to use the balance.
+            if (AuraPayButton == null && pocketUI != null && BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(OttoAuraGUID))
             {
                 CreateAuraPayToggle(__instance);
             }
@@ -278,11 +277,6 @@ public class CurrencyPocket
     internal static void UpdateAuraPayToggle()
     {
         if (InventoryGuiUpdatePatch.AuraPayButton == null) return;
-        // The toggle only means something when OttoAura is there to charge the balance or
-        // Pathwalk is there to reward it.
-        bool aura = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(OttoAuraGUID);
-        bool pathwalk = IsPathwalkOffered();
-        InventoryGuiUpdatePatch.AuraPayButton.gameObject.SetActive(aura || pathwalk);
         TextMeshProUGUI? label = InventoryGuiUpdatePatch.AuraPayButton.GetComponentInChildren<TextMeshProUGUI>();
         if (label == null) return;
         label.textWrappingMode = TextWrappingModes.NoWrap;
@@ -291,25 +285,11 @@ public class CurrencyPocket
         label.fontSizeMin = 8f;
         bool on = OttoPayApi.IsAuraPayEnabled();
         label.text = on ? "<color=#7CFFB2>AuraPay</color>" : "<color=#8A8A8A>AuraPay</color>";
-
-        string text = on ? "AuraPay is on." : "AuraPay is off.";
-        if (aura)
-        {
-            text += on
-                ? "\n\nA ward aura may charge your Merchant Bank balance to repair the gear you are wearing."
-                : "\n\nWard auras will not charge your Merchant Bank balance for repairs.";
-        }
-        if (pathwalk)
-        {
-            text += on
-                ? "\n\nThe magic of AuraPay makes you feel invigorated and lighter on your feet! You drain less stamina running on roads and trails."
-                : "\n\nTurn it on and the magic of AuraPay lightens your feet, so you drain less stamina running on roads and trails.";
-        }
-        text += on ? "\n\nClick to turn it off." : "\n\nClick to turn it on.";
-        Tooltips.Attach(InventoryGuiUpdatePatch.AuraPayButton.gameObject, "AuraPay", text);
+        Tooltips.Attach(InventoryGuiUpdatePatch.AuraPayButton.gameObject, "AuraPay",
+            on
+                ? "AuraPay is on.\n\nA ward aura may charge your Merchant Bank balance to repair the gear you are wearing.\n\nOttoAura's AuraBoost lightens your feet on roads and trails while AuraPay is on.\n\nClick to turn it off."
+                : "AuraPay is off.\n\nWard auras will not charge your Merchant Bank balance for repairs.\n\nOttoAura's AuraBoost lightens your feet on roads and trails while AuraPay is on.\n\nClick to turn it on.");
     }
-
-    private static bool IsPathwalkOffered() => Pathwalk.PathwalkEffect.Available && OttoPayPlugin.PathwalkEnabled.Value;
 
     private static void CreateAuraPayToggle(InventoryGui gui)
     {
@@ -322,15 +302,7 @@ public class CurrencyPocket
         {
             bool enabled = !OttoPayApi.IsAuraPayEnabled();
             OttoPayApi.SetAuraPayEnabled(enabled);
-            bool aura = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(OttoAuraGUID);
-            string message = (enabled, aura) switch
-            {
-                (true, true) => "AuraPay on: ward auras may charge your Merchant Bank balance.",
-                (false, true) => "AuraPay off: ward auras will not charge your balance.",
-                (true, false) => "AuraPay on: you feel lighter on your feet.",
-                (false, false) => "AuraPay off.",
-            };
-            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, message);
+            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft, enabled ? "AuraPay on: ward auras may charge your Merchant Bank balance." : "AuraPay off: ward auras will not charge your balance.");
         });
 
         UIGamePad? pad = button.GetComponent<UIGamePad>();
