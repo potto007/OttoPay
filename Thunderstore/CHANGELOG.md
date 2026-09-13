@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0
+
+- The AuraPay tooltip lists the aura services other mods register via OttoPayApi.
+- New OttoPayApi.RegisterAuraService and OttoPayApi.UnregisterAuraService for mods to advertise their AuraPay-powered features.
+- The hardcoded AuraBoost sentence moved to OttoAura, which now registers it as a service.
+
 ## 1.4.0
 
 - New withdraw icon.

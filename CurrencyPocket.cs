@@ -285,10 +285,14 @@ public class CurrencyPocket
         label.fontSizeMin = 8f;
         bool on = OttoPayApi.IsAuraPayEnabled();
         label.text = on ? "<color=#7CFFB2>AuraPay</color>" : "<color=#8A8A8A>AuraPay</color>";
+
+        IReadOnlyList<string> serviceLines = OttoPayApi.AuraServiceLines();
+        string serviceBlock = serviceLines.Count > 0 ? "\n\n" + string.Join("\n\n", serviceLines) : "";
+
         Tooltips.Attach(InventoryGuiUpdatePatch.AuraPayButton.gameObject, "AuraPay",
             on
-                ? "AuraPay is on.\n\nA ward aura may charge your Merchant Bank balance to repair the gear you are wearing.\n\nOttoAura's AuraBoost lightens your feet on roads and trails while AuraPay is on.\n\nClick to turn it off."
-                : "AuraPay is off.\n\nWard auras will not charge your Merchant Bank balance for repairs.\n\nOttoAura's AuraBoost lightens your feet on roads and trails while AuraPay is on.\n\nClick to turn it on.");
+                ? "AuraPay is on.\n\nA ward aura may charge your Merchant Bank balance to repair the gear you are wearing." + serviceBlock + "\n\nClick to turn it off."
+                : "AuraPay is off.\n\nWard auras will not charge your Merchant Bank balance for repairs." + serviceBlock + "\n\nClick to turn it on.");
     }
 
     private static void CreateAuraPayToggle(InventoryGui gui)
