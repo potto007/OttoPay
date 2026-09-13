@@ -1,8 +1,8 @@
 {
   "name": "OttoPay",
-  "version_number": "1.5.0",
+  "version_number": "1.5.1",
   "website_url": "https://github.com/potto007/OttoPay",
-  "description": "Join the Merchant Bank Network at any merchant. Coins you pick up go to a magical bank balance, not your inventory, and merchants draw on it when you buy. Based on CurrencyPocket by Azumatt.",
+  "description": "Join the Merchant Bank Network at any merchant. Coins you pick up go to a magical bank balance, not your inventory, and merchants draw on it when you buy.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350"
   ]

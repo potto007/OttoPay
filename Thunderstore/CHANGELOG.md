@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1
+
+- The Thunderstore description no longer mentions the mod OttoPay started from; the credit stays in the README.
+
 ## 1.5.0
 
 - The AuraPay tooltip lists the aura services other mods register via OttoPayApi.
