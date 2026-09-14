@@ -65,6 +65,78 @@ public static class OttoPayApi
     }
 
 
+    // Deposit handlers let other mods take dragged items other than coins on the balance.
+    // OttoAura's AuraTrade sells valuables this way. OttoAura binds RegisterDepositHandler and
+    // UnregisterDepositHandler by name via reflection; their signatures are a contract - do not
+    // rename or change parameters. Each callback gets the drag's inventory, item and amount.
+    private static readonly List<DepositHandler> _depositHandlers = new();
+    private static readonly HashSet<string> _depositHandlerWarnedNames = new();
+
+    // Registering a name that already exists replaces that handler in place, keeping its order.
+    // deposit does the whole sale itself, removing the items included; OttoPay removes nothing.
+    public static void RegisterDepositHandler(
+        string name,
+        Func<Inventory, ItemDrop.ItemData, int, bool> canDeposit,
+        Func<Inventory, ItemDrop.ItemData, int, bool> deposit,
+        Func<Inventory, ItemDrop.ItemData, int, string> describe)
+    {
+        DepositHandler handler = new(name, canDeposit, deposit, describe);
+        int index = _depositHandlers.FindIndex(h => h.Name == name);
+        if (index >= 0) _depositHandlers[index] = handler;
+        else _depositHandlers.Add(handler);
+    }
+
+    public static void UnregisterDepositHandler(string name)
+    {
+        _depositHandlers.RemoveAll(h => h.Name == name);
+    }
+
+    // The first handler that takes the drag, asked afresh on every call: a handler's answer can
+    // change from frame to frame, when the player walks out of a ward for one. The copy lets a
+    // callback register or unregister without breaking the loop.
+    internal static DepositHandler? AcceptingDepositHandler(Inventory inventory, ItemDrop.ItemData item, int amount)
+    {
+        foreach (DepositHandler handler in _depositHandlers.ToArray())
+        {
+            if (handler.CanDeposit(inventory, item, amount)) return handler;
+        }
+
+        return null;
+    }
+
+    // A callback that throws logs a warning once per name and counts as a refusal.
+    internal sealed class DepositHandler(
+        string name,
+        Func<Inventory, ItemDrop.ItemData, int, bool> canDeposit,
+        Func<Inventory, ItemDrop.ItemData, int, bool> deposit,
+        Func<Inventory, ItemDrop.ItemData, int, string> describe)
+    {
+        internal string Name { get; } = name;
+
+        internal bool CanDeposit(Inventory inventory, ItemDrop.ItemData item, int amount) =>
+            Call(() => canDeposit(inventory, item, amount), false);
+
+        internal bool Deposit(Inventory inventory, ItemDrop.ItemData item, int amount) =>
+            Call(() => deposit(inventory, item, amount), false);
+
+        internal string Describe(Inventory inventory, ItemDrop.ItemData item, int amount) =>
+            Call(() => describe(inventory, item, amount), "") ?? "";
+
+        private T Call<T>(Func<T> callback, T fallback)
+        {
+            try
+            {
+                return callback();
+            }
+            catch (Exception ex)
+            {
+                if (_depositHandlerWarnedNames.Add(Name))
+                    OttoPayPlugin.OttoPayLogger.LogWarning($"OttoPayApi: deposit handler '{Name}' threw: {ex.Message}");
+                return fallback;
+            }
+        }
+    }
+
     // Stored in the player's own data, so the choice follows the character, not the world.
     public const string AuraPayCustomData = "OttoPay_AuraPay";
     public const string BankMemberCustomData = "OttoPay_BankMember";

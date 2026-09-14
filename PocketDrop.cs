@@ -27,7 +27,7 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
     private void Update()
     {
         ItemDrop.ItemData? dragItem = DraggedItem();
-        if (dragItem == null || !CanDeposit(dragItem))
+        if (dragItem == null || (!CanDeposit(dragItem) && HandlerFor(dragItem) == null))
         {
             if (armorImage != null && armorImage.sprite != CurrencyPocket.InventoryGuiUpdatePatch.coinSprite)
             {
@@ -88,6 +88,10 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
         {
             uiTooltip.Set("Deposit coins", "Click to deposit these coins in your Merchant Bank balance.");
         }
+        else if (dragItem != null && HandlerFor(dragItem) is { } handler)
+        {
+            uiTooltip.Set(handler.Name, handler.Describe(InventoryGui.m_instance.m_dragInventory, dragItem, InventoryGui.m_instance.m_dragAmount));
+        }
         else
         {
             uiTooltip.Set("Merchant Bank",
@@ -105,7 +109,17 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
             case PointerEventData.InputButton.Left when InventoryGui.m_instance.m_dragGo && InventoryGui.m_instance.m_dragItem != null && InventoryGui.m_instance.m_dragInventory != null:
             {
                 ItemDrop.ItemData? dragItem = InventoryGui.m_instance.m_dragItem;
-                if (!CanDeposit(dragItem)) return;
+                if (!CanDeposit(dragItem))
+                {
+                    // The handler removes the items itself, and leaves the drag alone when it fails.
+                    OttoPayApi.DepositHandler? handler = HandlerFor(dragItem);
+                    if (handler == null || !handler.Deposit(InventoryGui.m_instance.m_dragInventory, dragItem, InventoryGui.m_instance.m_dragAmount)) return;
+
+                    CurrencyPocket.UpdatePocketUI();
+                    InventoryGui.m_instance.SetupDragItem(null, null, 1);
+                    InventoryGuiOnSplitOkPatch.throwAwayInventory = null!;
+                    break;
+                }
 
                 clicked = true;
                 // Add to the pocket
@@ -140,9 +154,16 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
         return InventoryGui.m_instance && InventoryGui.m_instance.m_dragGo ? InventoryGui.m_instance.m_dragItem : null;
     }
 
-    // Only coins deposit here. Valuables cash in through OttoAura's AuraTrade at a Warden,
-    // which takes a transaction fee.
+    // Coins deposit here directly. Anything else only through a registered deposit handler,
+    // such as OttoAura's AuraTrade, which sells valuables inside a ward for a transaction fee.
     private static bool CanDeposit(ItemDrop.ItemData item) => item.m_shared.m_name == CoinToken;
+
+    private static OttoPayApi.DepositHandler? HandlerFor(ItemDrop.ItemData item)
+    {
+        Inventory? inventory = InventoryGui.m_instance ? InventoryGui.m_instance.m_dragInventory : null;
+        if (inventory == null || CanDeposit(item)) return null;
+        return OttoPayApi.AcceptingDepositHandler(inventory, item, InventoryGui.m_instance!.m_dragAmount);
+    }
 
     // The tooltip lives on an empty child with no graphic, so it never receives pointer events
     // of its own. On this object it would answer every hover, the child buttons' included. The
