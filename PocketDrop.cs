@@ -12,10 +12,16 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
     internal static bool clicked;
     internal static Image armorImage = null!;
 
+    // The vanilla armor icon draws with the 'litpanel' material (Custom/LitGui), which
+    // desaturates and darkens its sprite. That suits the coin but turns the gold deposit
+    // arrow grey, so the arrow draws with the default UI material instead.
+    private Material? armorMaterial;
+
     private void Awake()
     {
         TryCreateTooltip();
         armorImage = transform.Find(ArmorIconName).GetComponent<Image>();
+        armorMaterial = armorImage.material;
     }
 
     private void Update()
@@ -25,12 +31,15 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
             if (armorImage != null && armorImage.sprite != CurrencyPocket.InventoryGuiUpdatePatch.coinSprite)
             {
                 armorImage.sprite = CurrencyPocket.InventoryGuiUpdatePatch.coinSprite;
+                armorImage.material = armorMaterial;
             }
 
             return;
         }
 
+        if (armorImage.sprite == DownloadSprite) return;
         armorImage.sprite = DownloadSprite;
+        armorImage.material = null;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
