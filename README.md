@@ -33,7 +33,7 @@ The config file is `potto007.OttoPay.cfg` in the BepInEx config folder, and the 
 
 ## Other mods
 
-- OttoAura draws on the balance through AuraPay when it charges for aura repairs, and its AuraBoost lightens your feet on roads and trails while AuraPay is on. Mods can register their own AuraPay services with OttoPayApi.RegisterAuraService so they appear in the AuraPay tooltip.
+- OttoAura draws on the balance through AuraPay when it charges for aura repairs, and its AuraBoost lightens your feet on roads and trails while AuraPay is on. Its AuraTrade sells valuables like rubies and amber dropped on the balance inside a ward, paying the value into the balance minus an AuraPay transaction fee. Mods can register their own AuraPay services with OttoPayApi.RegisterAuraService so they appear in the AuraPay tooltip.
 - CurrencyPocket by Azumatt cannot run next to OttoPay. Both mods keep the coins under the same player data key, so BepInEx refuses to load OttoPay beside it. A balance you built up with CurrencyPocket carries over, and a character with coins in it already counts as a bank member.
 - Jewelcrafting and QuickStackStore move the inventory panels too. OttoPay moves them to make room for the balance, and with one of these installed the coin balance keeps its place while the other panels shift instead.
 - ExtraSlots keeps lists of panels. OttoPay removes its own panel from those lists when they hold more panels than the row count allows.

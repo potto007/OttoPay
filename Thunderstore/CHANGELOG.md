@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.0
+
+- Valuables such as rubies and amber no longer cash in when dropped on the balance. Selling
+  them moved to OttoAura's AuraTrade, which works inside a ward and takes an AuraPay
+  transaction fee. The AllowValuableItems and AllowedValuablePrefabs settings are gone.
+- The deposit arrow shows in full colour; the armor icon's material had turned it grey.
+- The balance tooltip says to drop coins on the balance, not on an icon.
+- New OttoPayApi.TryDeposit, and OttoPayApi.RegisterDepositHandler and
+  UnregisterDepositHandler for mods that accept other dragged items on the balance.
+
 ## 1.5.1
 
 - The Thunderstore description no longer mentions the mod OttoPay started from; the credit stays in the README.
