@@ -105,12 +105,15 @@ public static class OttoPayApi
     }
 
     // Credits a Merchant Bank member's balance. OttoAura's AuraTrade pays the net value of
-    // traded valuables through this; the transaction fee is never credited.
+    // traded valuables through this; the transaction fee is never credited. The whole amount
+    // or nothing: a deposit that would overflow the balance credits nothing.
     public static bool TryDeposit(int amount)
     {
         if (amount < 0 || !IsBankMember()) return false;
         if (amount == 0) return true;
-        MiscFunctions.UpdatePlayerCustomData(MiscFunctions.GetPlayerCoinsFromCustomData() + amount);
+        int coins = MiscFunctions.GetPlayerCoinsFromCustomData();
+        if (coins > int.MaxValue - amount) return false;
+        MiscFunctions.UpdatePlayerCustomData(coins + amount);
         CurrencyPocket.UpdatePocketUI();
         return true;
     }
