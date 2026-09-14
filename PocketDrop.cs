@@ -26,7 +26,8 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
 
     private void Update()
     {
-        if (!InventoryGui.m_instance || !InventoryGui.m_instance.m_dragGo || InventoryGui.m_instance.m_dragItem == null || InventoryGui.m_instance.m_dragItem.m_shared.m_name != CoinToken)
+        ItemDrop.ItemData? dragItem = DraggedItem();
+        if (dragItem == null || !CanDeposit(dragItem))
         {
             if (armorImage != null && armorImage.sprite != CurrencyPocket.InventoryGuiUpdatePatch.coinSprite)
             {
@@ -82,8 +83,8 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
         TryCreateTooltip();
         if (!InventoryGui.m_instance || uiTooltip == null) return;
 
-        bool dragging = InventoryGui.m_instance.m_dragGo && InventoryGui.m_instance.m_dragItem != null;
-        if (dragging)
+        ItemDrop.ItemData? dragItem = DraggedItem();
+        if (dragItem != null && CanDeposit(dragItem))
         {
             uiTooltip.Set("Deposit coins", "Click to deposit these coins in your Merchant Bank balance.");
         }
@@ -104,38 +105,11 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
             case PointerEventData.InputButton.Left when InventoryGui.m_instance.m_dragGo && InventoryGui.m_instance.m_dragItem != null && InventoryGui.m_instance.m_dragInventory != null:
             {
                 ItemDrop.ItemData? dragItem = InventoryGui.m_instance.m_dragItem;
-                bool isCoin = dragItem.m_shared.m_name == CoinToken;
-                bool itemIsValuable = dragItem.m_shared.m_value > 0 && !isCoin;
-
-                // If it's not a coin and not valuable, reject
-                if (!isCoin && !itemIsValuable) return;
-
-                // If it's valuable, check config settings
-                if (itemIsValuable)
-                {
-                    // Check if valuable items are allowed
-                    if (!AllowValuableItems.Value) return;
-
-                    // Check if prefab allowlist is configured and if so, verify the item is in it
-                    string allowedPrefabs = AllowedValuablePrefabs.Value;
-                    if (!string.IsNullOrWhiteSpace(allowedPrefabs))
-                    {
-                        string prefabName = dragItem.m_dropPrefab?.name ?? "";
-                        IEnumerable<string> allowedList = allowedPrefabs.Split(',').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p));
-                        if (!allowedList.Contains(prefabName, StringComparer.OrdinalIgnoreCase)) return;
-                    }
-                }
+                if (!CanDeposit(dragItem)) return;
 
                 clicked = true;
                 // Add to the pocket
-                if (!itemIsValuable)
-                {
-                    MiscFunctions.UpdatePlayerCustomData(MiscFunctions.GetPlayerCoinsFromCustomData() + InventoryGui.m_instance.m_dragAmount);
-                }
-                else
-                {
-                    MiscFunctions.UpdatePlayerCustomData(MiscFunctions.GetPlayerCoinsFromCustomData() + (InventoryGui.m_instance.m_dragAmount * InventoryGui.m_instance.m_dragItem.m_shared.m_value));
-                }
+                MiscFunctions.UpdatePlayerCustomData(MiscFunctions.GetPlayerCoinsFromCustomData() + InventoryGui.m_instance.m_dragAmount);
 
                 CurrencyPocket.UpdatePocketUI();
                 if (InventoryGui.m_instance.m_dragAmount == InventoryGui.m_instance.m_dragItem.m_stack)
@@ -160,6 +134,15 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
                 break;
         }
     }
+
+    private static ItemDrop.ItemData? DraggedItem()
+    {
+        return InventoryGui.m_instance && InventoryGui.m_instance.m_dragGo ? InventoryGui.m_instance.m_dragItem : null;
+    }
+
+    // Only coins deposit here. Valuables cash in through OttoAura's AuraTrade at a Warden,
+    // which takes a transaction fee.
+    private static bool CanDeposit(ItemDrop.ItemData item) => item.m_shared.m_name == CoinToken;
 
     // The tooltip lives on an empty child with no graphic, so it never receives pointer events
     // of its own. On this object it would answer every hover, the child buttons' included. The

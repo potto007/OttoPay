@@ -31,8 +31,6 @@ public class OttoPayPlugin : BaseUnityPlugin
 
 
     private static ConfigEntry<Toggle> _serverConfigLocked = null!;
-    internal static ConfigEntry<bool> AllowValuableItems = null!;
-    internal static ConfigEntry<string> AllowedValuablePrefabs = null!;
 
     public enum Toggle
     {
@@ -49,8 +47,6 @@ public class OttoPayPlugin : BaseUnityPlugin
 
         _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
         _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
-        AllowValuableItems = Config.Bind("1 - General", "AllowValuableItems", true, "If enabled, items with a value greater than 0 can be converted to coins when dropped into the pocket.");
-        AllowedValuablePrefabs = Config.Bind("1 - General", "AllowedValuablePrefabs", "", "Comma-separated list of prefab names that are allowed to be converted to coins (e.g., 'Ruby,Amber,AmberPearl'). If empty, all valuable items are allowed when AllowValuableItems is enabled.");
 
         Assembly assembly = Assembly.GetExecutingAssembly();
         _harmony.PatchAll(assembly);
