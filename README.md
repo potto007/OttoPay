@@ -14,7 +14,7 @@ Think of it as a mystical tap-to-pay. The coins are not on your belt - the merch
 - Coins you pick up go straight to the balance, and you still see the normal pickup message.
 - Merchants read your balance when you buy, and RapidLoadouts reads it too.
 - A withdraw button opens the split dialog so you can choose how many coins to take, or you can hold Ctrl when you click it to take them all.
-- Drop coins on the coin icon to deposit them again. Items with a coin value, like rubies and amber, can be dropped there as well and are deposited for their value, which the config controls.
+- Drag coins onto your balance to deposit them again. Items with a coin value, like rubies and amber, can be dragged there as well and are deposited for their value, which the config controls.
 - An AuraPay toggle lets an OttoAura ward charge your balance to repair the gear you wear. It is off until you turn it on, and the choice is saved with the character.
 
 ## Client and server
@@ -30,7 +30,7 @@ The config file is `potto007.OttoPay.cfg` in the BepInEx config folder, and the 
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | Lock Configuration | On | Only server admins can change the config, and the setting is synced with the server. |
-| AllowValuableItems | true | Items with a coin value can be dropped on the coin icon and deposited for that value. |
+| AllowValuableItems | true | Items with a coin value can be dragged onto your balance and deposited for that value. |
 | AllowedValuablePrefabs | empty | Comma separated prefab names, for example `Ruby,Amber`. When set, only those items and coins can be deposited. When empty, every valuable item can be. |
 
 ## Other mods
