@@ -397,7 +397,7 @@ public class CurrencyPocket
     {
         if (InventoryGuiUpdatePatch.ExtractButton == null) return;
         Tooltips.Attach(InventoryGuiUpdatePatch.ExtractButton.gameObject, "Withdraw coins",
-            "Take coins from your Merchant Bank balance and put them in your inventory.\n\nChoose how many in the dialog. Hold Ctrl when you click to take them all.\n\nDrag coins onto your balance to deposit them again.");
+            "Take coins from your Merchant Bank balance and put them in your inventory.\n\nChoose how many in the dialog. Hold Ctrl when you click to take them all.\n\nDrop coins on your balance to deposit them again.");
     }
 
     private static void CreateIcon()

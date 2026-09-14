@@ -90,7 +90,7 @@ public class PocketDrop : MonoBehaviour, IPointerEnterHandler, IPointerMoveHandl
         else
         {
             uiTooltip.Set("Merchant Bank",
-                $"Balance: {MiscFunctions.GetPlayerCoinsFromCustomData()} coins.\n\nDrag coins here to deposit them. Any merchant draws on your balance when you buy.");
+                $"Balance: {MiscFunctions.GetPlayerCoinsFromCustomData()} coins.\n\nDrop coins here to deposit them. Any merchant draws on your balance when you buy.");
         }
 
         uiTooltip.OnHoverStart(hovered != null ? hovered : gameObject);
