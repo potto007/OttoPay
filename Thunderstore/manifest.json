@@ -1,6 +1,6 @@
 {
   "name": "OttoPay",
-  "version_number": "1.6.1",
+  "version_number": "1.6.2",
   "website_url": "https://github.com/potto007/OttoPay",
   "description": "Join the Merchant Bank Network at any merchant. Coins you pick up go to a magical bank balance, not your inventory, and merchants draw on it when you buy.",
   "dependencies": [
