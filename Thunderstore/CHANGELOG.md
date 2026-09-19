@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+
+- Rebuilt against Valheim 1.0.14. Every Harmony patch target still resolves in this build, and nothing else changed.
+
 ## 1.6.0
 
 - Valuables such as rubies and amber no longer cash in when dropped on the balance. Selling
