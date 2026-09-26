@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The Thunderstore description and README lead with what OttoAura adds: ward repairs,
+  AuraBoost, AuraMove and AuraTrade, paid through AuraPay.
+- The README has a section for CurrencyPocket users: the balance carries over.
+
 ## 1.6.3
 
 - Rebuilt against Valheim 1.0.16. Every Harmony patch target still resolves in this build, and nothing else changed.
