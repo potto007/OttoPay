@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.4
 
 - The Thunderstore description and README lead with what OttoAura adds: ward repairs,
   AuraBoost, AuraMove and AuraTrade, paid through AuraPay.

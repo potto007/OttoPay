@@ -2,7 +2,7 @@
 
 ![OttoPay. Your gold, always with you.](https://raw.githubusercontent.com/potto007/OttoPay/master/docs/images/ottopay-title.png)
 
-**Version 1.6.3**, built and Harmony-checked against Valheim 1.0.16.
+**Version 1.6.4**, built and Harmony-checked against Valheim 1.0.16.
 
 A bank balance for your coins, run by the merchants of Valheim.
 

@@ -14,7 +14,7 @@ namespace OttoPay;
 public class OttoPayPlugin : BaseUnityPlugin
 {
     internal const string ModName = "OttoPay";
-    internal const string ModVersion = "1.6.3";
+    internal const string ModVersion = "1.6.4";
     internal const string Author = "potto007";
     private const string ModGUID = $"{Author}.{ModName}";
     private static string ConfigFileName = $"{ModGUID}.cfg";

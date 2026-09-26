@@ -1,6 +1,6 @@
 {
   "name": "OttoPay",
-  "version_number": "1.6.3",
+  "version_number": "1.6.4",
   "website_url": "https://github.com/potto007/OttoPay",
   "description": "Coins go to a Merchant Bank balance, not your inventory. Replaces CurrencyPocket, and your balance carries over. Add OttoAura to spend it on ward repairs, moving builds and selling valuables.",
   "dependencies": [
