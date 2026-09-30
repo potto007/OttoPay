@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.6
+
+- Withdrawn coins still on the cursor when the drag ends, for example because you closed the
+  inventory, go back to your balance. They used to disappear, after they had already left it.
+- Withdrawn coins dropped on a slot holding another item stay on the cursor. The game swapped
+  the two, and the item that was in the slot was lost.
+
 ## 1.6.5
 
 - Withdrawn coins dropped on a coin stack without room for all of them stay on the cursor.
