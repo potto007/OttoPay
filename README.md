@@ -1,6 +1,6 @@
 # OttoPay
 
-![OttoPay. Your gold, always with you.](https://raw.githubusercontent.com/potto007/OttoPay/master/docs/images/ottopay-title.png)
+![OttoPay. Your gold, always with you.](https://raw.githubusercontent.com/potto007/OttoPay/main/docs/images/ottopay-title.png)
 
 **Version 1.6.5**, built and Harmony-checked against Valheim 1.0.16.
 
