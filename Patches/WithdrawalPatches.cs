@@ -38,6 +38,19 @@ internal static class WithdrawalPatches
         return !Withdrawal.IsWithdrawalDrag(__instance.m_dragInventory);
     }
 
+    // Withdrawn coins dropped on another item, in the player's grid or a chest's, stay on the
+    // cursor, as they do over a full coin stack. Vanilla would swap the two.
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.DropItem))]
+    private static bool InventoryGridDropItemPrefix(InventoryGrid __instance, Inventory fromInventory, Vector2i pos, ref bool __result)
+    {
+        if (!Withdrawal.Shared.Owns(fromInventory) || Withdrawal.MayLandOn(__instance.m_inventory.GetItemAt(pos.x, pos.y)))
+            return true;
+
+        __result = false;
+        return false;
+    }
+
     // Only coins moved into a bank member's own inventory are placed by the mod.
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.MoveItemToThis), typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int))]

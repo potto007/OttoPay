@@ -64,4 +64,14 @@ public class WithdrawalTests
         Assert.Equal(999, nearlyFull.m_stack);
         Assert.Equal(991, BalanceNow);
     }
+
+    // Vanilla answers a whole stack dropped on a different item by swapping the two, which
+    // would put that item in the withdrawal, where nothing ever gives it back.
+    [Fact]
+    public void Withdrawn_coins_land_only_on_an_empty_slot_or_on_coins()
+    {
+        Assert.True(Withdrawal.MayLandOn(null));
+        Assert.True(Withdrawal.MayLandOn(Items.CoinStack(300)));
+        Assert.False(Withdrawal.MayLandOn(Items.Stack("$item_sword_iron", 1, 1)));
+    }
 }

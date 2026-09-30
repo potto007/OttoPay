@@ -52,6 +52,14 @@ internal sealed class Withdrawal
         return left;
     }
 
+    /// Withdrawn coins may land on an empty slot or on coins, never on another item. Vanilla
+    /// swaps a whole stack dropped on a different item, which would move that item into the
+    /// withdrawal, and nothing ever takes an item out of it.
+    internal static bool MayLandOn(ItemDrop.ItemData? occupant)
+    {
+        return occupant == null || occupant.m_shared.m_name == CoinToken;
+    }
+
     internal bool Owns(Inventory? inventory)
     {
         return inventory != null && inventory == _coins;
