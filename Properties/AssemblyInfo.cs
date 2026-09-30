@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using OttoPay;
 
@@ -10,7 +11,7 @@ using OttoPay;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany(OttoPayPlugin.Author)]
 [assembly: AssemblyProduct(OttoPayPlugin.ModName)]
-[assembly: AssemblyCopyright("Copyright © 2026 potto007. Based on CurrencyPocket, Copyright © 2021 Azumatt.")]
+[assembly: AssemblyCopyright("Copyright © 2024-2026 OttoPay contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -34,3 +35,6 @@ using OttoPay;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion(OttoPayPlugin.ModVersion)]
 [assembly: AssemblyFileVersion(OttoPayPlugin.ModVersion)]
+
+// The unit tests under tests/ exercise internal types directly.
+[assembly: InternalsVisibleTo("OttoPay.Tests")]

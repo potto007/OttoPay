@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.5
+
+- Withdrawn coins dropped on a coin stack without room for all of them stay on the cursor.
+  The coins that did not fit used to disappear, although they had already left the balance.
+- OttoPay is released under the MIT license.
+- The code is reorganised and has unit tests. Nothing else changes in play.
+
 ## 1.6.4
 
 - The Thunderstore description and README lead with what OttoAura adds: ward repairs,
@@ -79,7 +86,7 @@
 
 ## 1.0.0
 
-- First release, from CurrencyPocket 1.0.13 by Azumatt, for Valheim 1.0.7.
+- First release, from CurrencyPocket 1.0.13, for Valheim 1.0.7.
 - Coins go to the bank only after you join the Merchant Bank Network at a merchant, and until
   then they behave as in vanilla.
 - AuraPay toggle, so OttoAura can charge your balance for repairs.

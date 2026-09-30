@@ -1,9 +1,7 @@
 using System.IO;
 using System.Reflection;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using OttoPay.Compatibility;
-using JetBrains.Annotations;
 using ServerSync;
 
 namespace OttoPay;
@@ -14,21 +12,20 @@ namespace OttoPay;
 public class OttoPayPlugin : BaseUnityPlugin
 {
     internal const string ModName = "OttoPay";
-    internal const string ModVersion = "1.6.4";
+    internal const string ModVersion = "1.6.5";
     internal const string Author = "potto007";
     private const string ModGUID = $"{Author}.{ModName}";
-    private static string ConfigFileName = $"{ModGUID}.cfg";
-    private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
-    internal readonly Harmony _harmony = new(ModGUID);
-    public static readonly ManualLogSource OttoPayLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
-    internal static Sprite DownloadSprite = null!;
-    public static OttoPayPlugin instance = null!;
-    private static readonly ConfigSync ConfigSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion, ModRequired = false};
-    private FileSystemWatcher _watcher;
+    private const string ConfigFileName = $"{ModGUID}.cfg";
+    // One second, in ticks.
+    private const long ReloadDelay = 10000000;
+    private static readonly string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+    // Nothing tested may read a static of this class: this initializer needs ServerSync, which
+    // only runs inside the game. Shared state lives in the feature classes instead.
+    private static readonly ConfigSync ConfigSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion, ModRequired = false };
+    private readonly Harmony _harmony = new(ModGUID);
     private readonly object _reloadLock = new();
+    private FileSystemWatcher? _watcher;
     private DateTime _lastConfigReloadTime;
-    private const long RELOAD_DELAY = 10000000; // One second
-
 
     private static ConfigEntry<Toggle> _serverConfigLocked = null!;
 
@@ -43,8 +40,6 @@ public class OttoPayPlugin : BaseUnityPlugin
         bool saveOnSet = Config.SaveOnConfigSet;
         Config.SaveOnConfigSet = false;
 
-        instance = this;
-
         _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
         _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
 
@@ -52,7 +47,7 @@ public class OttoPayPlugin : BaseUnityPlugin
         _harmony.PatchAll(assembly);
         SetupWatcher();
 
-        DownloadSprite = loadSprite("download.png");
+        BalanceDropTarget.DepositSprite = EmbeddedSprites.Load("download.png");
 
         Config.Save();
         if (saveOnSet)
@@ -63,8 +58,8 @@ public class OttoPayPlugin : BaseUnityPlugin
 
     public void Start()
     {
-        RapidLoadoutsCompat.Init();
-        ExtraSlotsCompat.FuckOff();
+        RapidLoadoutsCompat.Init(_harmony);
+        ExtraSlotsCompat.Init();
     }
 
     private void OnDestroy()
@@ -88,7 +83,7 @@ public class OttoPayPlugin : BaseUnityPlugin
     {
         DateTime now = DateTime.Now;
         long time = now.Ticks - _lastConfigReloadTime.Ticks;
-        if (time < RELOAD_DELAY)
+        if (time < ReloadDelay)
         {
             return;
         }
@@ -97,19 +92,19 @@ public class OttoPayPlugin : BaseUnityPlugin
         {
             if (!File.Exists(ConfigFileFullPath))
             {
-                OttoPayLogger.LogWarning("Config file does not exist. Skipping reload.");
+                Log.Warning("Config file does not exist. Skipping reload.");
                 return;
             }
 
             try
             {
-                OttoPayLogger.LogDebug("Reloading configuration...");
+                Log.Debug("Reloading configuration...");
                 SaveWithRespectToConfigSet(true);
-                OttoPayLogger.LogInfo("Configuration reload complete.");
+                Log.Info("Configuration reload complete.");
             }
             catch (Exception ex)
             {
-                OttoPayLogger.LogError($"Error reloading configuration: {ex.Message}");
+                Log.Error($"Error reloading configuration: {ex.Message}");
             }
         }
 
@@ -129,45 +124,10 @@ public class OttoPayPlugin : BaseUnityPlugin
         }
     }
 
-
-    private static byte[] ReadEmbeddedFileBytes(string name)
-    {
-        using MemoryStream stream = new();
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(Assembly.GetExecutingAssembly().GetName().Name + "." + name)!.CopyTo(stream);
-        return stream.ToArray();
-    }
-
-    // UnityEngine.ImageConversionModule cannot be referenced from net48: its metadata
-    // names ReadOnlySpan<byte>, which lives in the game's Mono mscorlib and not in the
-    // net48 reference assemblies. The byte[] overload of LoadImage still exists, so it is
-    // bound once at startup instead.
-    private static readonly MethodInfo? LoadImageMethod = AccessTools.Method(
-        "UnityEngine.ImageConversion:LoadImage", [typeof(Texture2D), typeof(byte[])]);
-
-    private static Texture2D loadTexture(string name)
-    {
-        Texture2D texture = new(0, 0);
-        if (LoadImageMethod == null)
-        {
-            OttoPayLogger.LogError("UnityEngine.ImageConversion.LoadImage was not found. Textures will not load.");
-            return texture;
-        }
-
-        LoadImageMethod.Invoke(null, [texture, ReadEmbeddedFileBytes("assets." + name)]);
-        return texture;
-    }
-
-    internal static Sprite loadSprite(string name)
-    {
-        Texture2D texture = loadTexture(name);
-        return texture != null ? Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero) : null!;
-    }
-
     private ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description, bool synchronizedSetting = true)
     {
         ConfigDescription extendedDescription = new(description.Description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]"), description.AcceptableValues, description.Tags);
         ConfigEntry<T> configEntry = Config.Bind(group, name, value, extendedDescription);
-        //var configEntry = Config.Bind(group, name, value, description);
 
         SyncedConfigEntry<T> syncedConfigEntry = ConfigSync.AddConfigEntry(configEntry);
         syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
@@ -179,43 +139,4 @@ public class OttoPayPlugin : BaseUnityPlugin
     {
         return config(group, name, value, new ConfigDescription(description), synchronizedSetting);
     }
-
-    private class ConfigurationManagerAttributes
-    {
-        [UsedImplicitly] public int? Order = null!;
-        [UsedImplicitly] public bool? Browsable = null!;
-        [UsedImplicitly] public string? Category = null!;
-        [UsedImplicitly] public Action<ConfigEntryBase>? CustomDrawer = null!;
-    }
-}
-
-public struct Constants
-{
-    public const string CoinPocketUIName = "CoinPocketUI";
-    public const string ExtractCoinsButtonName = "ExtractCoinsButton";
-    public const string AuraPayButtonName = "AuraPayToggleButton";
-    public const string ArmorName = "Armor";
-    public const string WeightName = "Weight";
-    public const string JewelcraftingSynergyName = "Jewelcrafting Synergy";
-    public const string TrashButtonName = "Trash";
-    public const string FavoritingToggleButton = "favoritingTogglingButton";
-    public const string QuickStackAreaButton = "quickStackAreaButton";
-    public const string RestockAreaButton = "restockAreaButton";
-    public const string SortInventoryButton = "sortInventoryButton";
-    internal const string CoinCountCustomData = "CoinPocket_CoinCount";
-    internal const string CoinIconName = "CoinIcon";
-    internal const string CoinToken = "$item_coins";
-    internal const string CoinsPrefabName = "Coins";
-    internal const string AcText = "ac_text";
-    internal const string ArmorIconName = "armor_icon";
-
-    // GUIDS
-    internal const string RandyQuickslots = "randyknapp.mods.equipmentandquickslots";
-    internal const string AzuEPIGUID = "Azumatt.AzuExtendedPlayerInventory";
-    internal const string QuickStackStoreGUID = "goldenrevolver.quick_stack_store";
-    internal const string JewelcraftingGUID = "org.bepinex.plugins.jewelcrafting";
-    internal const string RapidLoadoutsGUID = "Azumatt.RapidLoadouts";
-    internal const string OttoAuraGUID = "potto007.OttoAura";
-    internal const string ExtraSlotsGuid = "shudnal.ExtraSlots";
-    internal const string EsSectionName = "Mods compatibility - Reduced inventory size";
 }

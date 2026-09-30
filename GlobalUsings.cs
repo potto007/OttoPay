@@ -5,5 +5,7 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using BepInEx;
 global using HarmonyLib;
+global using OttoPay.Banking;
+global using OttoPay.UI;
 global using UnityEngine;
 global using static OttoPay.Constants;
