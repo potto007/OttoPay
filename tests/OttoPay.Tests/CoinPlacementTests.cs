@@ -66,4 +66,22 @@ public class CoinPlacementTests
         Assert.Equal(0, coins.m_stack);
         Assert.Empty(withdrawal.GetAllItems());
     }
+
+    // A withdrawal of 50 dropped on a stack with room for 9. Reporting the drop as done made the
+    // inventory screen let go of the other 41, which had already left the balance.
+    [Fact]
+    public void A_top_up_with_too_little_room_keeps_the_rest_on_the_cursor()
+    {
+        Inventory player = Items.Grid(4, 2);
+        ItemDrop.ItemData stack = Items.Place(player, Items.CoinStack(990), 0, 0);
+        Inventory withdrawal = Items.Grid(1, 1, "withdrawal");
+        ItemDrop.ItemData coins = Items.Place(withdrawal, Items.CoinStack(50), 0, 0);
+
+        bool done = CoinPlacement.MoveInto(player, withdrawal, coins, 50, 0, 0);
+
+        Assert.False(done);
+        Assert.Equal(999, stack.m_stack);
+        Assert.Equal(41, coins.m_stack);
+        Assert.Contains(coins, withdrawal.GetAllItems());
+    }
 }

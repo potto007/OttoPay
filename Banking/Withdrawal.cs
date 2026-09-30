@@ -41,7 +41,12 @@ internal static class Withdrawal
         // dragged out of the inventory instead of the withdrawal. Setting it back keeps the drag
         // on the withdrawn coins.
         gui.m_splitInventory = Pending;
-        Balance.SetLocal(Balance.Local() - (int)gui.m_splitDialog.SliderValue);
+        int amount = (int)gui.m_splitDialog.SliderValue;
+        Balance.SetLocal(Balance.Local() - amount);
+        // The withdrawal was filled with the whole balance so the slider could reach it. Only
+        // the chosen amount left the balance, so only that much may reach the inventory, however
+        // many drops it takes.
+        gui.m_splitItem!.m_stack = amount;
         BalancePanel.Refresh();
         _inProgress = false;
     }

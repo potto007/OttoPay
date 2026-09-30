@@ -29,8 +29,9 @@ internal static class CoinPlacement
 
     private static bool TopUp(Inventory target, Inventory? source, ItemDrop.ItemData item, int amount, ItemDrop.ItemData stack)
     {
+        int wanted = Math.Min(amount, item.m_stack);
         int room = Math.Max(0, stack.m_shared.m_maxStackSize - stack.m_stack);
-        int moved = Math.Min(Math.Min(room, amount), item.m_stack);
+        int moved = Math.Min(room, wanted);
         if (moved <= 0)
             return false;
 
@@ -42,6 +43,8 @@ internal static class CoinPlacement
 
         target.Changed();
         source?.Changed();
-        return true;
+        // Done only when the whole drag landed, as in vanilla. The inventory screen lets go of
+        // a drag it is told is done, and coins left in a withdrawal would go with it.
+        return moved == wanted;
     }
 }
