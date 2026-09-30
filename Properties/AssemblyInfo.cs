@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using OttoPay;
 
@@ -34,3 +35,6 @@ using OttoPay;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion(OttoPayPlugin.ModVersion)]
 [assembly: AssemblyFileVersion(OttoPayPlugin.ModVersion)]
+
+// The unit tests under tests/ exercise internal types directly.
+[assembly: InternalsVisibleTo("OttoPay.Tests")]
