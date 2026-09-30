@@ -3,28 +3,25 @@ using TMPro;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace OttoPay;
+namespace OttoPay.UI;
 
-// The coin balance belongs to the Merchant Bank Network. A player joins at any merchant's store
-// window, and until then coins behave exactly as they do in vanilla.
-[HarmonyPatch(typeof(StoreGui), nameof(StoreGui.Show))]
-static class MerchantBankJoinButton
+/// The Join Merchant Bank button in a merchant's store window. The coin balance belongs to the
+/// Merchant Bank Network, and a player joins at any merchant. Until then coins behave exactly as
+/// they do in vanilla.
+internal static class JoinButton
 {
     private const string JoinButtonName = "MerchantBankJoinButton";
     private const string JoinLabel = "Join Merchant Bank";
-    private static Button? _joinButton;
-
-    static void Postfix(StoreGui __instance)
+    private static Button? _button;
+    private static GameObject? _message;
+    /// Shown to players outside the bank only.
+    internal static void Refresh(StoreGui gui)
     {
-        if (_joinButton == null)
-        {
-            Create(__instance);
-        }
+        if (_button == null)
+            Create(gui);
 
-        if (_joinButton != null)
-        {
-            _joinButton.gameObject.SetActive(!OttoPayApi.IsBankMember());
-        }
+        if (_button != null)
+            _button.gameObject.SetActive(!Membership.LocalIsMember());
     }
 
     private static void Create(StoreGui gui)
@@ -32,7 +29,8 @@ static class MerchantBankJoinButton
         // Cloned from the Buy button, not the Sell button. Sell is a bare coin icon with no
         // text child, so a clone of it kept the coin art and silently dropped the label. That
         // put a second, unexplained Sell icon next to the real one.
-        if (gui.m_buyButton == null || gui.m_sellButton == null) return;
+        if (gui.m_buyButton == null || gui.m_sellButton == null)
+            return;
 
         Button button = Object.Instantiate(gui.m_buyButton, gui.m_sellButton.transform.parent);
         button.name = JoinButtonName;
@@ -40,22 +38,13 @@ static class MerchantBankJoinButton
         button.onClick.AddListener(() => Join(gui));
         button.interactable = true;
 
-        UIGamePad? pad = button.GetComponent<UIGamePad>();
-        if (pad != null)
-        {
-            if (pad.m_hint) Object.Destroy(pad.m_hint);
-            pad.m_hint = null;
-            pad.m_zinputKey = string.Empty;
-            pad.m_keyCode = KeyCode.None;
-        }
+        BalancePanel.DetachGamepadHint(button);
 
         // Localize.Start re-localizes its whole subtree one frame after the clone appears and
         // would put the Buy token back over our label. The clone carries no vanilla token, so
         // the component has nothing to do here.
         foreach (Localize stale in button.GetComponentsInChildren<Localize>(true))
-        {
             Object.Destroy(stale);
-        }
 
         TextMeshProUGUI[] labels = button.GetComponentsInChildren<TextMeshProUGUI>(true);
         foreach (TextMeshProUGUI label in labels)
@@ -107,13 +96,13 @@ static class MerchantBankJoinButton
         Tooltips.Attach(button.gameObject, "Merchant Bank",
             "Join the Merchant Bank Network.\n\nCoins you pick up vanish into your Merchant Bank balance, held for you by merchant magic. They take no inventory slot and weigh nothing.\n\nAny merchant draws on your balance when you buy, and you can call coins back into your hand whenever you like.");
 
-        _joinButton = button;
+        _button = button;
         Vector2 got = rect.rect.size;
-        OttoPayPlugin.OttoPayLogger.LogInfo(
+        Log.Info(
             $"Merchant Bank join button created at {rect.anchoredPosition}, size {got}, wanted {wanted}, labels {labels.Length}.");
         if (got.x <= 1f || got.y <= 1f)
         {
-            OttoPayPlugin.OttoPayLogger.LogWarning(
+            Log.Warning(
                 $"Join button has a degenerate size {got} and will not be visible. Falling back to a fixed size.");
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = wanted;
@@ -123,7 +112,8 @@ static class MerchantBankJoinButton
     private static void Join(StoreGui gui)
     {
         Player? player = Player.m_localPlayer;
-        if (player == null || OttoPayApi.IsBankMember()) return;
+        if (player == null || Membership.IsMember(player.m_customData))
+            return;
 
         OttoPayApi.JoinBank();
         string merchant = gui.m_trader != null ? Localization.instance.Localize(gui.m_trader.m_name) : "The merchant";
@@ -133,22 +123,20 @@ static class MerchantBankJoinButton
         player.Message(MessageHud.MessageType.Center, welcome);
         ShowStoreMessage(gui, welcome);
 
-        if (_joinButton != null)
-        {
-            _joinButton.gameObject.SetActive(false);
-        }
+        if (_button != null)
+            _button.gameObject.SetActive(false);
 
         gui.FillList();
     }
 
-    private static GameObject? _message;
-
-    // Drawn as the last child of the store panel, so it sits in front of everything the
-    // panel draws. A heads up display message cannot do that.
+    /// Drawn as the last child of the store panel, so it sits in front of everything the panel
+    /// draws. A heads up display message cannot do that.
     private static void ShowStoreMessage(StoreGui gui, string text)
     {
-        if (gui.m_rootPanel == null) return;
-        if (_message != null) Object.Destroy(_message);
+        if (gui.m_rootPanel == null)
+            return;
+        if (_message != null)
+            Object.Destroy(_message);
 
         GameObject panel = new("OttoPayStoreMessage", typeof(RectTransform), typeof(Image));
         panel.transform.SetParent(gui.m_rootPanel.transform, false);
@@ -191,10 +179,9 @@ static class MerchantBankJoinButton
     private static IEnumerator HideMessageAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        if (_message != null)
-        {
-            Object.Destroy(_message);
-            _message = null;
-        }
+        if (_message == null)
+            yield break;
+        Object.Destroy(_message);
+        _message = null;
     }
 }

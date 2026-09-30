@@ -2,25 +2,33 @@ using BepInEx.Bootstrap;
 
 namespace OttoPay.Compatibility;
 
-public class RapidLoadoutsCompat
+/// RapidLoadouts sells loadouts for coins through its own coin count, so it reads the balance
+/// too. Its type only exists when it is installed, and plugins may load in any order, so the
+/// patch goes on at Start, once every plugin has loaded, and only when it is there.
+internal static class RapidLoadoutsCompat
 {
-    public static void Init()
+    private const string CoinCountMethod = "RapidLoadouts.UI.PurchasableLoadoutGui:GetPlayerCoins";
+
+    internal static void Init(Harmony harmony)
     {
-        if (!Chainloader.PluginInfos.TryGetValue(RapidLoadoutsGUID, out PluginInfo rapidLoadoutsInfo)) return;
-        if (rapidLoadoutsInfo != null && rapidLoadoutsInfo.Instance)
+        if (!Chainloader.PluginInfos.TryGetValue(RapidLoadoutsGuid, out PluginInfo? info) || info == null || info.Instance == null)
+            return;
+
+        System.Reflection.MethodInfo? target = AccessTools.Method(CoinCountMethod);
+        if (target == null)
         {
-            // RapidLoadouts is loaded
-            OttoPayPlugin.instance._harmony.PatchAll(typeof(RapidLoadoutsCompat));
+            Log.Warning($"RapidLoadouts is installed but {CoinCountMethod} was not found, so its loadouts will not see the balance.");
+            return;
         }
+
+        harmony.Patch(target, postfix: new HarmonyMethod(typeof(RapidLoadoutsCompat), nameof(PurchasableLoadoutGuiGetPlayerCoinsPostfix)));
     }
 
-    [HarmonyPatch("RapidLoadouts.UI.PurchasableLoadoutGui, RapidLoadouts", "GetPlayerCoins"), HarmonyPostfix]
-    public static void GetPlayerCoins(ref int __result, ref ItemDrop ___m_coinPrefab)
+    private static void PurchasableLoadoutGuiGetPlayerCoinsPostfix(ref int __result, ItemDrop ___m_coinPrefab)
     {
-        if (!Player.m_localPlayer || ___m_coinPrefab == null) return;
-        if (___m_coinPrefab.m_itemData.m_shared.m_name == CoinToken && OttoPayApi.IsBankMember())
-        {
-            __result += Player.m_localPlayer.m_customData.TryGetValue(CoinCountCustomData, out string coinCount) ? int.Parse(coinCount) : 0;
-        }
+        if (___m_coinPrefab == null || ___m_coinPrefab.m_itemData.m_shared.m_name != CoinToken)
+            return;
+        if (Membership.LocalIsMember())
+            __result += Balance.Local();
     }
 }
