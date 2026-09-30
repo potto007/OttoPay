@@ -23,7 +23,7 @@ OttoAura lists OttoPay as a dependency, so a mod manager installs both.
 
 ## Coming from CurrencyPocket
 
-OttoPay continues Azumatt's [CurrencyPocket](https://thunderstore.io/c/valheim/p/Azumatt/CurrencyPocket/), which is now deprecated. Your pocket balance carries over, and a character with coins in it already counts as a Merchant Bank member. Remove CurrencyPocket first: the two mods cannot load side by side.
+OttoPay replaces CurrencyPocket, which is now deprecated. Your pocket balance carries over, and a character with coins in it already counts as a Merchant Bank member. Remove CurrencyPocket first: the two mods cannot load side by side.
 
 ## What you get
 
@@ -51,10 +51,10 @@ The config file is `potto007.OttoPay.cfg` in the BepInEx config folder, and the 
 ## Other mods
 
 - OttoAura uses AuraPay for everything listed under [Better with OttoAura](#better-with-ottoaura). Other mods can register their own AuraPay services with OttoPayApi.RegisterAuraService so they appear in the AuraPay tooltip.
-- CurrencyPocket by Azumatt cannot run next to OttoPay. Both mods keep the coins under the same player data key, so BepInEx refuses to load OttoPay beside it. A balance you built up with CurrencyPocket carries over, and a character with coins in it already counts as a bank member.
+- CurrencyPocket cannot run next to OttoPay. Both mods keep the coins under the same player data key, so BepInEx refuses to load OttoPay beside it. A balance you built up with CurrencyPocket carries over, and a character with coins in it already counts as a bank member.
 - Jewelcrafting and QuickStackStore move the inventory panels too. OttoPay moves them to make room for the balance, and with one of these installed the coin balance keeps its place while the other panels shift instead.
 - ExtraSlots keeps lists of panels. OttoPay removes its own panel from those lists when they hold more panels than the row count allows.
 
 ## Credits
 
-OttoPay started from CurrencyPocket 1.0.13 by Azumatt, under the MIT No Attribution license. The Merchant Bank Network, the join button, the withdraw dialog, AuraPay and the tooltips are new, so the bugs in them are mine. Report them at https://github.com/potto007/OttoPay.
+OttoPay is maintained by **Paul Otto**. Report bugs at https://github.com/potto007/OttoPay.

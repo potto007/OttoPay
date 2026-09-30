@@ -79,7 +79,7 @@
 
 ## 1.0.0
 
-- First release, from CurrencyPocket 1.0.13 by Azumatt, for Valheim 1.0.7.
+- First release, from CurrencyPocket 1.0.13, for Valheim 1.0.7.
 - Coins go to the bank only after you join the Merchant Bank Network at a merchant, and until
   then they behave as in vanilla.
 - AuraPay toggle, so OttoAura can charge your balance for repairs.
