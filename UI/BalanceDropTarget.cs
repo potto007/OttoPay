@@ -91,7 +91,6 @@ internal sealed class BalanceDropTarget : MonoBehaviour, IPointerEnterHandler, I
 
         BalancePanel.Refresh();
         gui.SetupDragItem(null, null, 1);
-        Withdrawal.Pending = null;
     }
 
     private static void DepositCoins(InventoryGui gui, ItemDrop.ItemData coins)

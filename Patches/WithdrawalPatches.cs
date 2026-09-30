@@ -9,7 +9,21 @@ internal static class WithdrawalPatches
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.OnSplitOk))]
     private static void InventoryGuiOnSplitOkPrefix(InventoryGui __instance)
     {
-        Withdrawal.Confirm(__instance);
+        Withdrawal.ConfirmSplit(__instance);
+    }
+
+    // Every way a drag ends passes through here: a drop that lands, a deposit, closing the
+    // inventory. Coins the withdrawal still holds then go back to the balance, because they
+    // left it when the split dialog was confirmed.
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.SetupDragItem))]
+    private static void InventoryGuiSetupDragItemPrefix(InventoryGui __instance, Inventory inventory)
+    {
+        if (!Withdrawal.Shared.Owns(__instance.m_dragInventory) || Withdrawal.Shared.Owns(inventory))
+            return;
+        Player? player = Player.m_localPlayer;
+        if (player != null && Withdrawal.Shared.DragEnded(player.m_customData) > 0)
+            BalancePanel.Refresh();
     }
 
     // With no container of its own open, vanilla cancels every drag that did not start in the
