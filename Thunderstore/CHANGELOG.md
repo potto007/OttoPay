@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.7
+
+- Rebuilt against Valheim 1.0.17. Every Harmony patch target still resolves in this build, and nothing else changed.
+
 ## 1.6.6
 
 - Withdrawn coins still on the cursor when the drag ends, for example because you closed the
