@@ -6,3 +6,4 @@ riderModule.iml
 .idea/
 .vs/
 CurrencyPocket.sln.DotSettings.user
+environment.local.props
